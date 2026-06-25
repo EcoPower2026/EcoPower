@@ -1,0 +1,22 @@
+export type RootStackParamList = {
+  Main: undefined;
+  Cadastro: undefined;
+  Login: undefined;
+  Home: undefined;
+  Settings: undefined;
+  Graphs: undefined;
+  Appliances: undefined;
+  ApplianceForm: { applianceId?: string } | undefined;
+  Goals: undefined;
+  GoalForm: { goalId?: string } | undefined;
+  Alerts: undefined;
+  Reports: undefined;
+  Insights: undefined;
+  DemoMode: undefined;
+  History: undefined;
+  Simulator: undefined;
+  Forecast: undefined;
+  Comparison: undefined;
+  Impact: undefined;
+  About: undefined;
+};

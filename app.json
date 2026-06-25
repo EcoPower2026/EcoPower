@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "trabalhoMendes",
+    "slug": "trabalhoMendes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Logo-Stexto_claro.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Logo-escuro.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Logo-Stexto-escuro.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/Logo-claro.png"
+    },
+    "plugins": [
+      "expo-status-bar",
+      "expo-sharing",
+      "expo-font",
+      "expo-splash-screen"
+    ]
+  }
+}
