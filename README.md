@@ -15,7 +15,7 @@ EcoPower é um aplicativo mobile premium para monitoramento, análise e reduçã
 - **Eco Impacto** — Gamificação leve com conquistas, níveis de eficiência, streak e impacto ambiental
 - **Simulador de Consumo** — Simulação de economia com cenários comparativos
 - **Previsão e Comparativo** — Projeções de consumo e comparação entre períodos
-- **4 Temas Visuais** — EcoPower Dark, EcoPower Light, Eco Nature e Aurora Energy
+- **3 Temas Visuais** — EcoPower Dark, EcoPower Light e Eco Nature
 
 ## 📱 Plataformas
 
@@ -76,7 +76,7 @@ const firebaseConfig = {
 | **EcoPower Dark** | Azul petróleo escuro (padrão) |
 | **EcoPower Light** | Cinza claro corporativo |
 | **Eco Nature** | Verde sustentável |
-| **Aurora Energy** | Roxo + ciano futurista |
+
 
 ## 📄 Licença
 
