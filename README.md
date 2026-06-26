@@ -72,12 +72,11 @@ const firebaseConfig = {
 ## 🎨 Temas
 
 | Tema | Estilo |
-|---|---|---|
-| **Eco Nature Premium** (padrão) | Verde escuro premium com acabamentos elegantes |
+|------|--------|
+| **Eco Nature Premium** (padrão) | Verde escuro premium com detalhes elegantes |
 | **EcoPower Dark** | Azul petróleo escuro |
 | **EcoPower Light** | Cinza claro corporativo |
 | **Eco Nature** | Verde sustentável claro |
-
 
 ## 📄 Licença
 
