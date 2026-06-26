@@ -33,10 +33,16 @@ export default function Alerts({ navigation }: AlertsProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
 
+  const alertRgba = (hex: string, opacity: number) => {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${opacity})`;
+  };
   const cardColors = {
-    danger: { bg: 'rgba(231,76,60,0.08)', border: 'rgba(231,76,60,0.3)', labelBg: 'rgba(231,76,60,0.15)', text: colors.alert.danger },
-    warning: { bg: 'rgba(243,156,18,0.08)', border: 'rgba(243,156,18,0.3)', labelBg: 'rgba(243,156,18,0.15)', text: colors.alert.warning },
-    info: { bg: 'rgba(46,204,113,0.08)', border: 'rgba(46,204,113,0.3)', labelBg: 'rgba(46,204,113,0.15)', text: colors.alert.info },
+    danger: { bg: alertRgba(colors.alert.danger, 0.08), border: alertRgba(colors.alert.danger, 0.3), labelBg: alertRgba(colors.alert.danger, 0.15), text: colors.alert.danger },
+    warning: { bg: alertRgba(colors.alert.warning, 0.08), border: alertRgba(colors.alert.warning, 0.3), labelBg: alertRgba(colors.alert.warning, 0.15), text: colors.alert.warning },
+    info: { bg: alertRgba(colors.alert.info, 0.08), border: alertRgba(colors.alert.info, 0.3), labelBg: alertRgba(colors.alert.info, 0.15), text: colors.alert.info },
   };
 
   const [alerts, setAlerts] = useState<Alert[]>([]);

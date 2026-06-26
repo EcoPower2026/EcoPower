@@ -31,7 +31,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = '@ecopower_theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [themeName, setThemeName] = useState<ThemeName>('ecoPowerDark');
+    const [themeName, setThemeName] = useState<ThemeName>('ecoNaturePremium');
     const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
@@ -58,12 +58,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const toggleTheme = useCallback(async () => {
         const pairs: Record<string, ThemeName> = {
+            ecoNaturePremium: 'ecoPowerDark',
             ecoPowerDark: 'ecoPowerLight',
-            ecoPowerLight: 'ecoPowerDark',
-            ecoNature: 'ecoPowerDark',
-            auroraEnergy: 'ecoPowerDark',
+            ecoPowerLight: 'ecoNature',
+            ecoNature: 'ecoNaturePremium',
         };
-        const next = pairs[themeName] || 'ecoPowerDark';
+        const next = pairs[themeName] || 'ecoNaturePremium';
         await setTheme(next);
     }, [themeName, setTheme]);
 

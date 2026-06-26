@@ -4,27 +4,27 @@
     "slug": "trabalhoMendes",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Logo-Stexto_claro.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/Logo-escuro.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A1A12"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Logo-Stexto-escuro.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0A1A12"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/Logo-claro.png"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-status-bar",

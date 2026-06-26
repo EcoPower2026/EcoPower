@@ -37,6 +37,7 @@ const screenWidth = Dimensions.get('window').width - spacing.md * 2;
 export default function Graphs({ navigation }: GraphsProps) {
   const { colors, themeName } = useTheme();
   const { isDemoMode } = useDemo();
+  const isPremium = themeName === 'ecoNaturePremium';
 
   const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [monitoring, setMonitoring] = useState<MonitoringState | null>(null);
@@ -135,10 +136,13 @@ export default function Graphs({ navigation }: GraphsProps) {
 
         <View style={{
           backgroundColor: colors.card,
-          borderRadius: borderRadius.card,
+          borderRadius: isPremium ? 24 : borderRadius.card,
           padding: spacing.xl,
           alignItems: 'center',
-          ...shadows.card,
+          ...(isPremium
+            ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 8, borderWidth: 1, borderColor: colors.border }
+            : shadows.card
+          ),
         }}>
           <View style={{
             width: 56,
@@ -196,13 +200,13 @@ export default function Graphs({ navigation }: GraphsProps) {
       }}>Gráficos</Text>
 
       <View style={{
-        backgroundColor: colors.green.primary,
-        borderRadius: borderRadius.card,
-        padding: spacing.lg,
-        marginBottom: spacing.md,
-        alignItems: 'center',
-        ...shadows.floating,
-      }}>
+          backgroundColor: colors.green.primary,
+          borderRadius: isPremium ? 24 : borderRadius.card,
+          padding: spacing.lg,
+          marginBottom: spacing.md,
+          alignItems: 'center',
+          ...(isPremium ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 8 } : shadows.floating),
+        }}>
         <View style={{
           backgroundColor: 'rgba(255,255,255,0.15)',
           paddingHorizontal: spacing.sm + 6,
@@ -253,10 +257,13 @@ export default function Graphs({ navigation }: GraphsProps) {
 
       <View style={{
         backgroundColor: colors.card,
-        borderRadius: borderRadius.card,
+        borderRadius: isPremium ? 24 : borderRadius.card,
         padding: spacing.md,
         marginBottom: spacing.md,
-        ...shadows.card,
+        ...(isPremium
+          ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 8, borderWidth: 1, borderColor: colors.border }
+          : shadows.card
+        ),
       }}>
         <Text style={{
           fontFamily: 'Poppins',
@@ -296,10 +303,13 @@ export default function Graphs({ navigation }: GraphsProps) {
 
       <View style={{
         backgroundColor: colors.card,
-        borderRadius: borderRadius.card,
+        borderRadius: isPremium ? 24 : borderRadius.card,
         padding: spacing.md,
         marginBottom: spacing.md,
-        ...shadows.card,
+        ...(isPremium
+          ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 8, borderWidth: 1, borderColor: colors.border }
+          : shadows.card
+        ),
       }}>
         <Text style={{
           fontFamily: 'Poppins',

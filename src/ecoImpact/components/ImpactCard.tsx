@@ -17,25 +17,25 @@ export default function ImpactCard({ impact }: ImpactCardProps) {
       icon: 'cloud-outline' as const,
       label: 'CO₂ Evitado',
       value: `${impact.co2AvoidedKg} kg`,
-      color: '#3498DB',
+      color: colors.blue.chart,
     },
     {
       icon: 'leaf-outline' as const,
       label: 'Árvores Equivalentes',
       value: `${impact.treesEquivalent} ${impact.treesEquivalent === 1 ? 'árvore' : 'árvores'}`,
-      color: '#2ECC71',
+      color: colors.green.light,
     },
     {
       icon: 'flash-outline' as const,
       label: 'Energia Economizada',
       value: `${impact.energySavedKwh} kWh`,
-      color: '#F39C12',
+      color: colors.alert.warning,
     },
     {
       icon: 'cash-outline' as const,
       label: 'Impacto Financeiro',
       value: `R$ ${impact.financialSavings.toFixed(2)}`,
-      color: '#27AE60',
+      color: colors.green.primary,
     },
   ];
 

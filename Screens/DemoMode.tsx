@@ -1,7 +1,6 @@
 import React from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, ImageBackground } from 'react-native';
 import Button from '../src/components/Button';
-import EcoPowerLogo from '../src/components/EcoPowerLogo';
 import { RootStackParamList } from '../src/types/navigation';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { useDemo } from '../src/contexts/DemoContext';
@@ -21,89 +20,94 @@ export default function DemoMode({ navigation }: DemoModeProps) {
   };
 
   return (
-    <ScrollView
+    <ImageBackground
+      source={require('../assets/fundo-cad-log.png')}
       style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
+      resizeMode="cover"
     >
-      <View style={styles.heroSection}>
-        <EcoPowerLogo size="lg" />
-        <View style={styles.demoBadge}>
-          <Text style={styles.demoBadgeText}>MODO DEMONSTRAÇÃO</Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Sobre o Sistema</Text>
-        <Text style={styles.cardText}>
-          O EcoPower é um sistema inteligente de monitoramento de consumo de energia elétrica.
-          Através de sensores de corrente, o sistema coleta dados em tempo real do
-          consumo dos seus aparelhos e fornece análises detalhadas, relatórios e recomendações
-          para economia de energia.
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Funcionalidades Disponíveis</Text>
-        {[
-          'Dashboard com indicadores em tempo real',
-          'Gerenciamento de aparelhos e metas',
-          'Alertas inteligentes de consumo',
-          'Relatórios avançados com exportação',
-          'Gráficos e análises de consumo',
-          'Simulador de consumo e economia',
-          'Recomendações inteligentes',
-          'Score de eficiência energética',
-        ].map((item, i) => (
-          <View key={i} style={styles.featureRow}>
-            <Text style={styles.featureBullet}>✓</Text>
-            <Text style={styles.featureText}>{item}</Text>
+      <ScrollView
+        style={styles.overlay}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroSection}>
+          <View style={styles.demoBadge}>
+            <Text style={styles.demoBadgeText}>MODO DEMONSTRAÇÃO</Text>
           </View>
-        ))}
-      </View>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Dados de Demonstração</Text>
-        <Text style={styles.cardText}>
-          Você terá acesso a um ambiente completo com dados simulados de 7 aparelhos,
-          metas de economia, alertas automáticos e histórico de 30 dias de leituras.
-          Todas as funcionalidades estarão disponíveis como em uma conta real.
-        </Text>
-      </View>
+        <View style={[styles.card, shadows.card]}>
+          <Text style={styles.cardTitle}>Sobre o Sistema</Text>
+          <Text style={styles.cardText}>
+            O EcoPower é um sistema inteligente de monitoramento de consumo de energia elétrica.
+            Através de sensores de corrente, o sistema coleta dados em tempo real do
+            consumo dos seus aparelhos e fornece análises detalhadas, relatórios e recomendações
+            para economia de energia.
+          </Text>
+        </View>
 
-      <View style={styles.infoBox}>
-        <Text style={styles.infoText}>
-          Os dados exibidos são simulados para fins de demonstração.
-          Nenhuma conta ou cadastro é necessário.
-        </Text>
-      </View>
+        <View style={[styles.card, shadows.card]}>
+          <Text style={styles.cardTitle}>Funcionalidades Disponíveis</Text>
+          {[
+            'Dashboard com indicadores em tempo real',
+            'Gerenciamento de aparelhos e metas',
+            'Alertas inteligentes de consumo',
+            'Relatórios avançados com exportação',
+            'Gráficos e análises de consumo',
+            'Simulador de consumo e economia',
+            'Recomendações inteligentes',
+            'Score de eficiência energética',
+          ].map((item, i) => (
+            <View key={i} style={styles.featureRow}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>{item}</Text>
+            </View>
+          ))}
+        </View>
 
-      <Button
-        title="Entrar na Demonstração"
-        onPress={handleEnterDemo}
-        style={styles.enterButton}
-      />
+        <View style={[styles.card, shadows.card]}>
+          <Text style={styles.cardTitle}>Dados de Demonstração</Text>
+          <Text style={styles.cardText}>
+            Você terá acesso a um ambiente completo com dados simulados de 7 aparelhos,
+            metas de economia, alertas automáticos e histórico de 30 dias de leituras.
+            Todas as funcionalidades estarão disponíveis como em uma conta real.
+          </Text>
+        </View>
 
-      <Button
-        title="Voltar"
-        onPress={() => navigation.goBack()}
-        variant="outline"
-        style={styles.backButton}
-      />
-    </ScrollView>
+        <View style={[styles.infoBox, shadows.soft]}>
+          <Text style={styles.infoText}>
+            Os dados exibidos são simulados para fins de demonstração.
+            Nenhuma conta ou cadastro é necessário.
+          </Text>
+        </View>
+
+        <Button
+          title="Entrar na Demonstração"
+          onPress={handleEnterDemo}
+          style={styles.enterButton}
+        />
+
+        <Button
+          title="Voltar"
+          onPress={() => navigation.goBack()}
+          variant="outline"
+          style={styles.backButton}
+        />
+      </ScrollView>
+    </ImageBackground>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1 },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' },
   content: { padding: spacing.lg, paddingBottom: 40 },
-  heroSection: { alignItems: 'center', marginBottom: spacing.lg, marginTop: 20 },
+  heroSection: { alignItems: 'center', marginBottom: spacing.lg, marginTop: 40 },
   demoBadge: {
     backgroundColor: colors.alert.warning,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    marginTop: spacing.md,
   },
   demoBadgeText: {
     fontFamily: 'Poppins',
@@ -117,7 +121,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: borderRadius.card,
     padding: spacing.md,
     marginBottom: spacing.md,
-    ...shadows.card,
   },
   cardTitle: {
     fontFamily: 'Poppins',

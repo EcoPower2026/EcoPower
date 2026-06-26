@@ -6,7 +6,8 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { EnergyReading, Goal, Forecast, GoalComparison } from '../types';
+import { EnergyReading, Goal, Forecast, GoalComparison, DemoReading } from '../types';
+import { demoData } from '../data/demoData';
 
 function getMonthRange(): { start: string; end: string; daysElapsed: number; daysInMonth: number } {
   const now = new Date();
@@ -177,9 +178,10 @@ export async function generateForecastFromReadings(
 export function generateDemoForecast(tariff?: number, goals?: Goal[]): Forecast {
   const { daysElapsed, daysInMonth } = getMonthRange();
 
-  const demoKwh = 185;
+  const demoReadings = demoData.readings as DemoReading[];
+  const demoKwh = demoReadings.reduce((sum, r) => sum + (r.kwh || 0), 0);
   const demoTariff = tariff ?? 0.95;
-  const demoCost = demoKwh * demoTariff;
+  const demoCost = demoReadings.reduce((sum, r) => sum + (r.cost || r.kwh * demoTariff || 0), 0);
   const demoDailyAvg = demoKwh / Math.max(daysElapsed, 1);
   const projectedKwh = demoDailyAvg * daysInMonth;
   const projectedCost = (demoCost / Math.max(daysElapsed, 1)) * daysInMonth;
@@ -211,18 +213,22 @@ export function generateDemoForecast(tariff?: number, goals?: Goal[]): Forecast 
       `Você está ${Math.abs(goalComparison.percentageAbove).toFixed(0)}% abaixo da meta mensal.`
     );
   }
+  const acKwh = demoReadings
+    .filter(r => r.applianceName === 'Ar Condicionado')
+    .reduce((sum, r) => sum + (r.kwh || 0), 0);
+  const acCostPerHour = acKwh > 0 ? (acKwh / 30 / 6) * demoTariff : 1.5 * demoTariff;
   recommendations.push(
-    `Reduzindo 1 hora de uso do ar condicionado por dia, você pode economizar até R$ ${(demoTariff * 1.5 * 30).toFixed(2)} no mês.`
+    `Reduzindo 1 hora de uso do ar condicionado por dia, você pode economizar até R$ ${(acCostPerHour * 30).toFixed(2)} no mês.`
   );
 
   return {
-    currentConsumption: demoKwh,
-    currentCost: demoCost,
-    projectedConsumption: projectedKwh,
-    projectedCost,
+    currentConsumption: Number(demoKwh.toFixed(1)),
+    currentCost: Number(demoCost.toFixed(2)),
+    projectedConsumption: Number(projectedKwh.toFixed(1)),
+    projectedCost: Number(projectedCost.toFixed(2)),
     daysElapsed,
     daysInMonth,
-    dailyAverage: demoDailyAvg,
+    dailyAverage: Number(demoDailyAvg.toFixed(2)),
     goalComparison,
     recommendations,
     month: getMonthName(),

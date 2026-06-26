@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import { ScrollView, View, Text, Image, Linking, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../src/contexts/ThemeContext';
 import Card from '../src/components/Card';
@@ -110,6 +110,32 @@ export default function About() {
           residencial.
         </Text>
       </View>
+
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => Linking.openURL('https://ecopower2026.netlify.app/')}
+        style={{
+          backgroundColor: colors.card,
+          borderRadius: borderRadius.card,
+          padding: spacing.md,
+          marginBottom: spacing.md,
+          ...shadows.card,
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{
+          fontFamily: 'Poppins', fontSize: 13, fontWeight: '600', color: colors.text.darkMuted,
+          marginBottom: spacing.sm, letterSpacing: 0.5, textTransform: 'uppercase',
+        }}>Saiba mais sobre o EcoPower</Text>
+        <Image
+          source={{ uri: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ecopower2026.netlify.app/' }}
+          style={{ width: 120, height: 120, marginBottom: spacing.sm }}
+          resizeMode="contain"
+        />
+        <Text style={{ fontFamily: 'Poppins', fontSize: 11, color: colors.green.primary, fontWeight: '500' }}>
+          ecopower2026.netlify.app
+        </Text>
+      </TouchableOpacity>
 
       <View style={{ marginTop: spacing.md, alignItems: 'center', paddingVertical: spacing.md }}>
         <Text style={{ fontFamily: 'Poppins', fontSize: 14, color: colors.text.primary, fontWeight: '700', marginBottom: 4 }}>

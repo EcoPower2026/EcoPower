@@ -7,7 +7,7 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import { spacing, borderRadius, shadows } from '../theme/designSystem';
+import { spacing, borderRadius, shadows, ThemeName } from '../theme/designSystem';
 import { useTheme } from '../contexts/ThemeContext';
 
 type CardProps = {
@@ -25,7 +25,7 @@ export default function Card({
   onPress,
   variant = 'normal',
 }: CardProps) {
-  const { colors } = useTheme();
+  const { colors, themeName } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const bgColor =
@@ -56,12 +56,15 @@ export default function Card({
     }).start();
   };
 
+  const isPremium = themeName === 'ecoNaturePremium';
   const cardStyle: ViewStyle = {
     backgroundColor: bgColor,
-    borderRadius: borderRadius.card,
+    borderRadius: isPremium ? 24 : borderRadius.card,
     padding: spacing.md,
-    ...shadows.card,
-    ...borderStyle,
+    ...(isPremium
+      ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, elevation: 8, borderWidth: 1, borderColor: colors.border }
+      : { ...shadows.card, ...borderStyle }
+    ),
   };
 
   const isWhiteCard = variant === 'white';

@@ -327,7 +327,7 @@ export function generateDemoDashboardData(): DashboardData {
     goal = { value: activeGoal.valorAlvo, unit: 'cost', label: activeGoal.titulo };
   }
 
-  const efficiency = { score: 72, classificacao: 'Bom' as const };
+  const efficiency = { score: demoData.efficiencyScore.score, classificacao: demoData.efficiencyScore.classificacao };
 
   const topConsumers = getTopConsumers(readings);
   const demoKwh = currentConsumption;

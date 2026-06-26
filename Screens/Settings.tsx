@@ -95,7 +95,7 @@ export default function Settings({ navigation }: SettingsProps) {
               <Text style={{ fontFamily: 'Poppins', fontSize: 13, color: colors.text.darkMuted, marginTop: 2 }}>
                 {themeName === 'ecoPowerDark' ? 'Escuro Padrão' :
                  themeName === 'ecoPowerLight' ? 'Claro Padrão' :
-                 themeName === 'ecoNature' ? 'Eco Nature' : 'Aurora Energy'}
+                 themeName === 'ecoNature' ? 'Eco Nature' : 'Eco Nature Premium'}
               </Text>
             </View>
           </View>

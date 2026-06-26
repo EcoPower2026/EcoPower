@@ -19,10 +19,10 @@ export default function EfficiencyLevelCard({ currentLevel, currentPoints, getPr
   const nextLevelPoints = nextLevel ? nextLevel.pontosMinimos : null;
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.header}>
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelNumber}>{currentLevel}</Text>
+        <View style={[styles.levelBadge, { backgroundColor: colors.green.primary + '20', borderWidth: 2, borderColor: colors.green.primary }]}>
+          <Text style={[styles.levelNumber, { color: colors.green.primary }]}>{currentLevel}</Text>
         </View>
         <View style={styles.levelInfo}>
           <Text style={[typography.caption, { color: colors.text.muted, textTransform: 'uppercase', letterSpacing: 0.5 }]}>
@@ -92,9 +92,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#2ECC7120',
-    borderWidth: 2,
-    borderColor: '#2ECC71',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -103,7 +100,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins',
     fontSize: 20,
     fontWeight: '800',
-    color: '#2ECC71',
   },
   levelInfo: {
     flex: 1,

@@ -6,7 +6,8 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { EnergyReading, PeriodComparison, PeriodData, PeriodVariation } from '../types';
+import { EnergyReading, PeriodComparison, PeriodData, PeriodVariation, DemoReading } from '../types';
+import { demoData } from '../data/demoData';
 
 function getWeekRanges(): {
   current: { start: string; end: string; label: string };
@@ -290,19 +291,38 @@ function generateDemoPeriodData(
   };
 }
 
+function getMonthName(date: Date): string {
+  const months = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  ];
+  return months[date.getMonth()];
+}
+
 export function generateDemoComparison(tariff?: number): {
   month: PeriodComparison;
   week: PeriodComparison;
 } {
   const effectiveTariff = tariff ?? 0.95;
+  const demoReadings = demoData.readings as DemoReading[];
+  const now = new Date();
+  const currentMonthKwh = demoReadings.reduce((sum, r) => sum + (r.kwh || 0), 0);
+  const currentCost = currentMonthKwh * effectiveTariff;
+  const prevMonthKwh = currentMonthKwh * 1.15;
+  const prevCost = prevMonthKwh * effectiveTariff;
 
-  const monthCurrent = generateDemoPeriodData('Junho', 220, effectiveTariff);
-  const monthPrevious = generateDemoPeriodData('Maio', 260, effectiveTariff);
+  const currentMonthLabel = getMonthName(now);
+  const prevMonthLabel = getMonthName(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+
+  const monthCurrent = generateDemoPeriodData(currentMonthLabel, currentMonthKwh, effectiveTariff);
+  const monthPrevious = generateDemoPeriodData(prevMonthLabel, prevMonthKwh, effectiveTariff);
   const monthVariation = calculateVariation(monthCurrent, monthPrevious);
   const monthMessage = generateMessage('mês anterior', monthVariation);
 
-  const weekCurrent = generateDemoPeriodData('Esta Semana', 52, effectiveTariff);
-  const weekPrevious = generateDemoPeriodData('Semana Passada', 48, effectiveTariff);
+  const weekKwh = currentMonthKwh / 30 * 7;
+  const prevWeekKwh = weekKwh * 1.15;
+  const weekCurrent = generateDemoPeriodData('Esta Semana', weekKwh, effectiveTariff);
+  const weekPrevious = generateDemoPeriodData('Semana Passada', prevWeekKwh, effectiveTariff);
   const weekVariation = calculateVariation(weekCurrent, weekPrevious);
   const weekMessage = generateMessage('semana passada', weekVariation);
 

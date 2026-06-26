@@ -1,5 +1,6 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { Asset } from 'expo-asset';
 import { cacheDirectory, readAsStringAsync, writeAsStringAsync, EncodingType } from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 import { Report, PeriodComparison, Forecast, EfficiencyScore, Insight, Goal } from '../types';
@@ -48,20 +49,20 @@ function formatNumber(value: number, decimals: number = 1): string {
 
 function getEfficiencyColor(classificacao: string): string {
   switch (classificacao) {
-    case 'Excelente': return '#2ECC71';
-    case 'Bom': return '#7ED957';
-    case 'Regular': return '#F39C12';
-    case 'Crítico': return '#E74C3C';
-    default: return '#7B8CA5';
+    case 'Excelente': return '#22C55E';
+    case 'Bom': return '#4ADE80';
+    case 'Regular': return '#D4A017';
+    case 'Crítico': return '#D84315';
+    default: return '#7B8D82';
   }
 }
 
 function getPriorityColor(prioridade: string): string {
   switch (prioridade) {
-    case 'alta': return '#E74C3C';
-    case 'media': return '#F39C12';
-    case 'baixa': return '#2ECC71';
-    default: return '#7B8CA5';
+    case 'alta': return '#D84315';
+    case 'media': return '#D4A017';
+    case 'baixa': return '#2B6777';
+    default: return '#7B8D82';
   }
 }
 
@@ -77,20 +78,21 @@ function getPriorityLabel(prioridade: string): string {
 function generateConsumptionChart(stats: { name: string; consumption: number; percentage: number }[]): string {
   if (stats.length === 0) return '';
   const maxConsumption = Math.max(...stats.map(s => s.consumption), 1);
-  const barH = 26;
-  const gap = 10;
+  const barH = 28;
+  const gap = 12;
   const h = stats.length * (barH + gap) + 20;
-  const labelW = 130;
-  const maxBarW = 320;
+  const labelW = 140;
+  const maxBarW = 300;
   let bars = '';
   stats.forEach((s, i) => {
     const y = i * (barH + gap) + 10;
     const bw = (s.consumption / maxConsumption) * maxBarW;
     const pct = s.percentage.toFixed(1);
     bars += `
-      <text x="0" y="${y + barH - 7}" font-family="Poppins, sans-serif" font-size="11" fill="#475569">${escapeHtml(s.name)}</text>
-      <rect x="${labelW}" y="${y}" width="${bw}" height="${barH}" rx="4" fill="#3498DB" opacity="0.85"/>
-      <text x="${labelW + bw + 8}" y="${y + barH - 7}" font-family="Poppins, sans-serif" font-size="11" fill="#1E293B" font-weight="bold">${formatNumber(s.consumption, 1)} kWh (${pct}%)</text>
+      <text x="0" y="${y + barH - 8}" font-family="Poppins, sans-serif" font-size="10" fill="#475569">${escapeHtml(s.name)}</text>
+      <rect x="${labelW}" y="${y}" width="${Math.max(bw, 4)}" height="${barH}" rx="6" fill="#22C55E" opacity="0.8"/>
+      <text x="${labelW + bw + 10}" y="${y + barH - 8}" font-family="Poppins, sans-serif" font-size="10" fill="#1E293B" font-weight="600">${formatNumber(s.consumption, 1)} kWh</text>
+      <text x="${labelW + bw + 10}" y="${y + barH + 5}" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8">${pct}%</text>
     `;
   });
   return `<svg width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg">${bars}</svg>`;
@@ -99,72 +101,80 @@ function generateConsumptionChart(stats: { name: string; consumption: number; pe
 function generateComparisonChart(comparison: PeriodComparison): string {
   const { currentPeriod, previousPeriod, variation } = comparison;
   const maxVal = Math.max(currentPeriod.consumption, previousPeriod.consumption, 1);
-  const barW = 60;
-  const gap = 12;
-  const chartH = 200;
-  const chartW = 180;
-  const bottomMargin = 30;
+  const barW = 50;
+  const gap = 16;
+  const chartH = 180;
+  const chartW = 200;
+  const bottomMargin = 28;
   const maxBarH = chartH - bottomMargin - 30;
   const curH = (currentPeriod.consumption / maxVal) * maxBarH;
   const prevH = (previousPeriod.consumption / maxVal) * maxBarH;
+  const isSavings = variation.isSavings;
+  const curColor = isSavings ? '#22C55E' : '#2B6777';
+  const prevColor = '#A5D6A7';
   return `
     <svg width="${chartW}" height="${chartH}" xmlns="http://www.w3.org/2000/svg">
-      <text x="${chartW / 2}" y="${chartH - 2}" font-family="Poppins, sans-serif" font-size="10" fill="#7B8CA5" text-anchor="middle">${comparison.periodType === 'month' ? 'Comparativo Mensal' : 'Comparativo Semanal'}</text>
-      <rect x="20" y="${chartH - bottomMargin - curH}" width="${barW}" height="${curH}" rx="4" fill="#2ECC71"/>
-      <text x="${20 + barW / 2}" y="${chartH - bottomMargin - curH - 6}" font-family="Poppins, sans-serif" font-size="10" fill="#2ECC71" text-anchor="middle" font-weight="bold">${formatNumber(currentPeriod.consumption, 1)}</text>
-      <text x="${20 + barW / 2}" y="${chartH - 10}" font-family="Poppins, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Atual</text>
-      <rect x="${20 + barW + gap}" y="${chartH - bottomMargin - prevH}" width="${barW}" height="${prevH}" rx="4" fill="#9CAFC4"/>
-      <text x="${20 + barW + gap + barW / 2}" y="${chartH - bottomMargin - prevH - 6}" font-family="Poppins, sans-serif" font-size="10" fill="#9CAFC4" text-anchor="middle" font-weight="bold">${formatNumber(previousPeriod.consumption, 1)}</text>
-      <text x="${20 + barW + gap + barW / 2}" y="${chartH - 10}" font-family="Poppins, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Anterior</text>
-      <text x="${chartW - 5}" y="12" font-family="Poppins, sans-serif" font-size="10" fill="#7B8CA5" text-anchor="end">kWh</text>
+      <line x1="0" y1="${chartH - bottomMargin}" x2="${chartW}" y2="${chartH - bottomMargin}" stroke="#E2E8F0" stroke-width="1"/>
+      <rect x="30" y="${chartH - bottomMargin - curH}" width="${barW}" height="${curH}" rx="4" fill="${curColor}"/>
+      <text x="${30 + barW / 2}" y="${chartH - bottomMargin - curH - 8}" font-family="Poppins, sans-serif" font-size="10" fill="${curColor}" text-anchor="middle" font-weight="700">${formatNumber(currentPeriod.consumption, 1)}</text>
+      <text x="${30 + barW / 2}" y="${chartH - 6}" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8" text-anchor="middle">Atual</text>
+      <rect x="${30 + barW + gap}" y="${chartH - bottomMargin - prevH}" width="${barW}" height="${prevH}" rx="4" fill="${prevColor}"/>
+      <text x="${30 + barW + gap + barW / 2}" y="${chartH - bottomMargin - prevH - 8}" font-family="Poppins, sans-serif" font-size="10" fill="#64748B" text-anchor="middle" font-weight="700">${formatNumber(previousPeriod.consumption, 1)}</text>
+      <text x="${30 + barW + gap + barW / 2}" y="${chartH - 6}" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8" text-anchor="middle">Anterior</text>
+      <text x="${chartW - 5}" y="12" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8" text-anchor="end">kWh</text>
     </svg>
   `;
 }
 
 function generateGoalProgressBar(progress: number, target: number): string {
   const pct = target > 0 ? Math.min((progress / target) * 100, 100) : 0;
-  const barW = 300;
-  const barH = 18;
+  const barW = 320;
+  const barH = 10;
   return `
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="margin:4px 0 8px 0;">
       <svg width="${barW}" height="${barH + 10}" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#2ECC71"/>
-            <stop offset="100%" stop-color="#7ED957"/>
+            <stop offset="0%" stop-color="#22C55E"/>
+            <stop offset="100%" stop-color="#4ADE80"/>
           </linearGradient>
         </defs>
-        <rect x="0" y="0" width="${barW}" height="${barH}" rx="9" fill="#E2E8F0"/>
-        <rect x="0" y="0" width="${(pct / 100) * barW}" height="${barH}" rx="9" fill="url(#barGrad)"/>
-        <text x="${barW / 2}" y="${barH / 2 + 5}" font-family="Poppins, sans-serif" font-size="10" fill="${pct > 30 ? '#FFFFFF' : '#1E293B'}" text-anchor="middle" font-weight="bold">${pct.toFixed(0)}%</text>
+        <rect x="0" y="0" width="${barW}" height="${barH}" rx="4" fill="#E2E8F0"/>
+        <rect x="0" y="0" width="${(pct / 100) * barW}" height="${barH}" rx="4" fill="url(#barGrad)"/>
+        <text x="0" y="${barH + 8}" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8">${pct.toFixed(0)}% concluído</text>
       </svg>
-      <span style="font-size:12px;color:#475569;font-weight:600;">${formatNumber(progress, 1)} / ${formatNumber(target, 1)}</span>
     </div>
   `;
 }
 
 function generateEfficiencyGauge(score: number): string {
-  const r = 40;
+  const r = 36;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
-  const cx = 50;
-  const cy = 50;
+  const cx = 44;
+  const cy = 44;
   return `
-    <svg width="120" height="110" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E2E8F0" stroke-width="8"/>
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2ECC71" stroke-width="8" stroke-dasharray="${filled} ${circ - filled}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-      <text x="${cx}" y="${cy}" font-family="Poppins, sans-serif" font-size="22" fill="#1E293B" text-anchor="middle" font-weight="bold" dy="6">${score}</text>
-      <text x="${cx}" y="${cy + 24}" font-family="Poppins, sans-serif" font-size="9" fill="#7B8CA5" text-anchor="middle">/ 100</text>
+    <svg width="100" height="98" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#22C55E" stroke-width="6" stroke-dasharray="${filled} ${circ - filled}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+      <text x="${cx}" y="${cy}" font-family="Poppins, sans-serif" font-size="20" fill="#1E293B" text-anchor="middle" font-weight="800" dy="5">${score}</text>
+      <text x="${cx}" y="${cy + 20}" font-family="Poppins, sans-serif" font-size="8" fill="#94A3B8" text-anchor="middle">/ 100</text>
     </svg>
   `;
 }
 
 function generateCoverWaves(): string {
   return `
-    <svg style="position:absolute;bottom:0;left:0;width:100%;height:240px;" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill="rgba(46,204,113,0.08)" d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,213.3C672,224,768,192,864,165.3C960,139,1056,117,1152,122.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-      <path fill="rgba(52,152,219,0.06)" d="M0,256L48,245.3C96,235,192,213,288,213.3C384,213,480,235,576,224C672,213,768,171,864,149.3C960,128,1056,128,1152,149.3C1248,171,1344,213,1392,234.7L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
-      <path fill="rgba(46,204,113,0.04)" d="M0,288L48,277.3C96,267,192,245,288,240C384,235,480,245,576,256C672,267,768,277,864,266.7C960,256,1056,224,1152,213.3C1248,203,1344,213,1392,218.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/>
+    <svg style="position:absolute;bottom:0;left:0;width:100%;height:280px;" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill="rgba(34,197,94,0.06)" d="M0,160 C240,260 480,80 720,160 C960,240 1200,100 1440,180 L1440,320 L0,320 Z"/>
+      <path fill="rgba(43,103,119,0.04)" d="M0,200 C240,120 480,280 720,200 C960,120 1200,240 1440,160 L1440,320 L0,320 Z"/>
+      <path fill="rgba(34,197,94,0.03)" d="M0,240 C360,180 720,300 1080,220 C1260,180 1350,240 1440,260 L1440,320 L0,320 Z"/>
+      <circle cx="85%" cy="15%" r="3" fill="#22C55E" opacity="0.3"/>
+      <circle cx="90%" cy="25%" r="2" fill="#2B6777" opacity="0.2"/>
+      <circle cx="78%" cy="8%" r="4" fill="#16A34A" opacity="0.15"/>
+      <circle cx="92%" cy="10%" r="1.5" fill="#4ADE80" opacity="0.25"/>
+      <line x1="82%" y1="20%" x2="95%" y2="8%" stroke="#22C55E" stroke-width="0.5" opacity="0.1"/>
+      <line x1="75%" y1="12%" x2="88%" y2="22%" stroke="#2B6777" stroke-width="0.5" opacity="0.08"/>
     </svg>
   `;
 }
@@ -215,7 +225,7 @@ function generateConclusionText(data: PDFReportData): string {
   return parts.join(' ');
 }
 
-function buildHTML(data: PDFReportData): string {
+function buildHTML(data: PDFReportData, coverImage?: string): string {
   const { report, comparison, forecast, insights, goals } = data;
   const formattedDate = formatDate(report.generatedAt);
   const monthName = getMonthName(new Date(report.generatedAt));
@@ -240,12 +250,43 @@ function buildHTML(data: PDFReportData): string {
 
   const economyAmount = monthVar?.isSavings ? Math.abs(monthVar.consumptionDiff) * (report.totalCost / (report.totalConsumption || 1)) : 0;
 
+  const co2Avoided = Math.round(report.totalConsumption * 0.4 * 100) / 100;
+  const treesEquivalent = Math.floor(co2Avoided / 22);
+
+  function pageHeader(pageNum: number): string {
+    return `
+    <div class="page-header">
+      <div class="header-left">
+        <span class="header-logo">ECOPOWER</span>
+        <span class="header-divider"></span>
+      </div>
+      <div class="header-right">
+        <span class="header-date">${formattedDate}</span>
+        <span class="header-page">${pageNum}</span>
+      </div>
+    </div>
+    <div class="header-subtitle-line">Relatório Inteligente de Consumo Energético</div>`;
+  }
+
+  function pageFooter(pageNum: number): string {
+    return `
+    <div class="page-footer">
+      <span class="footer-left">ECOPOWER</span>
+      <span class="footer-center">${formattedDate}</span>
+      <span class="footer-right">${pageNum}</span>
+    </div>`;
+  }
+
+  function sectionTitle(title: string): string {
+    return `<div class="section-title"><span class="title-dot"></span>${title}</div>`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relatório EcoPower - ${monthName} ${year}</title>
+<title>EcoPower — Relatório ${monthName} ${year}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -254,14 +295,13 @@ function buildHTML(data: PDFReportData): string {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Poppins', sans-serif;
-    color: #1E293B;
-    background: #F5F7FA;
-    line-height: 1.5;
+    color: #334155;
+    background: #0A1A12;
   }
   .page {
     width: 210mm;
     min-height: 297mm;
-    padding: 16mm 16mm 18mm 16mm;
+    padding: 12mm 18mm 12mm 18mm;
     position: relative;
     background: #FFFFFF;
     page-break-after: always;
@@ -270,337 +310,480 @@ function buildHTML(data: PDFReportData): string {
   }
   .page:last-child { page-break-after: auto; }
 
-  /* COVER */
+  /* ========== COVER ========== */
   .cover-page {
-    background: linear-gradient(150deg, #08111F 0%, #0E1A2B 40%, #132238 100%);
+    background: linear-gradient(160deg, #0A1A12 0%, #1A3D28 50%, #22C55E 100%);
     color: #FFFFFF;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 30mm 20mm;
+    padding: 34mm 24mm;
     position: relative;
     overflow: hidden;
   }
   .cover-glow {
     position: absolute;
-    top: -40%;
-    right: -20%;
-    width: 70%;
-    height: 70%;
-    background: radial-gradient(circle, rgba(46,204,113,0.12) 0%, transparent 70%);
+    top: -35%;
+    right: -18%;
+    width: 65%;
+    height: 65%;
+    background: radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%);
     border-radius: 50%;
   }
   .cover-glow-2 {
     position: absolute;
-    bottom: -30%;
-    left: -15%;
-    width: 50%;
-    height: 50%;
-    background: radial-gradient(circle, rgba(52,152,219,0.08) 0%, transparent 70%);
+    bottom: -25%;
+    left: -12%;
+    width: 45%;
+    height: 45%;
+    background: radial-gradient(circle, rgba(63,163,77,0.08) 0%, transparent 65%);
     border-radius: 50%;
   }
   .cover-content { position: relative; z-index: 1; }
-  .cover-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 40px;
-    background: linear-gradient(135deg, #2ECC71, #3498DB);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px auto;
-    font-size: 36px;
-    line-height: 1;
+  .cover-seal {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 24px;
   }
   .cover-logo {
-    font-size: 48px;
+    font-size: 56px;
     font-weight: 800;
-    letter-spacing: 3px;
-    margin-bottom: 2px;
-    background: linear-gradient(135deg, #2ECC71, #3498DB);
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, #16A34A, #4ADE80);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .cover-subtitle {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
-    letter-spacing: 6px;
+    letter-spacing: 5px;
     text-transform: uppercase;
-    opacity: 0.7;
-    margin-bottom: 24px;
+    opacity: 0.55;
+    margin-bottom: 32px;
   }
   .cover-divider {
-    width: 50px;
+    width: 48px;
     height: 3px;
-    background: #2ECC71;
-    margin: 0 auto 24px auto;
+    background: #16A34A;
+    margin: 0 auto 28px auto;
     border-radius: 2px;
   }
   .cover-title {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    line-height: 1.3;
+    line-height: 1.4;
     margin-bottom: 36px;
     opacity: 0.95;
   }
-  .cover-info { font-size: 13px; opacity: 0.75; line-height: 2; }
+  .cover-info { font-size: 12px; opacity: 0.7; line-height: 2.2; }
   .cover-info strong { font-weight: 700; opacity: 1; }
-  .cover-footer {
+  .cover-meta {
     position: absolute;
     bottom: 18mm;
     left: 0;
     right: 0;
     text-align: center;
-    font-size: 10px;
-    opacity: 0.5;
-    line-height: 1.8;
+    font-size: 9px;
+    opacity: 0.4;
+    line-height: 2;
     z-index: 1;
   }
 
-  /* HEADER */
+  /* ========== HEADER ========== */
   .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #2ECC71;
-    margin-bottom: 16px;
+    padding-bottom: 6px;
+    margin-bottom: 0;
     flex-shrink: 0;
   }
-  .header-left { display: flex; align-items: center; gap: 8px; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
   .header-logo {
     font-size: 14px;
     font-weight: 800;
-    color: #2ECC71;
-    letter-spacing: 1px;
+    color: #1E293B;
+    letter-spacing: 1.5px;
   }
   .header-divider {
-    color: #CBD5E1;
-    font-size: 14px;
-    font-weight: 300;
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    background: #CBD5E1;
   }
-  .header-subtitle {
-    font-size: 11px;
-    color: #7B8CA5;
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-date { font-size: 8px; color: #94A3B8; letter-spacing: 0.3px; }
+  .header-page {
+    font-size: 8px;
+    color: #FFFFFF;
+    background: #22C55E;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+  .header-subtitle-line {
+    font-size: 9px;
+    color: #94A3B8;
     font-weight: 500;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
   }
-  .header-right { font-size: 9px; color: #94A3B8; }
 
-  /* TITLE */
+  /* ========== TITLE ========== */
   .page-title {
     font-size: 20px;
     font-weight: 700;
     color: #1E293B;
-    margin-bottom: 12px;
+    margin-bottom: 2px;
     flex-shrink: 0;
   }
   .page-subtitle {
-    font-size: 12px;
-    color: #7B8CA5;
-    margin-bottom: 16px;
+    font-size: 10px;
+    color: #94A3B8;
+    margin-bottom: 18px;
     flex-shrink: 0;
+    font-weight: 400;
   }
 
-  /* KPI CARDS */
-  .kpi-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; flex-shrink: 0; }
+  /* ========== KPI CARDS ========== */
+  .kpi-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; flex-shrink: 0; }
   .kpi-card {
     flex: 1 1 calc(33.33% - 10px);
-    min-width: 140px;
-    background: #FFFFFF;
-    border-radius: 20px;
-    padding: 18px 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+    min-width: 150px;
+    background: #F8FAFC;
+    border-radius: 16px;
+    padding: 16px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
     text-align: center;
   }
-  .kpi-value { font-size: 20px; font-weight: 800; color: #2ECC71; margin-bottom: 4px; }
-  .kpi-label { font-size: 10px; color: #7B8CA5; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .kpi-trend { font-size: 9px; color: #94A3B8; margin-top: 2px; }
-  .kpi-card.highlight {
-    background: linear-gradient(135deg, #132238, #1A3150);
-    color: #FFFFFF;
+  .kpi-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px auto;
+    font-size: 13px;
+    font-weight: 700;
   }
-  .kpi-card.highlight .kpi-value { color: #7ED957; }
-  .kpi-card.highlight .kpi-label { color: rgba(255,255,255,0.7); }
-  .kpi-card.highlight .kpi-trend { color: rgba(255,255,255,0.5); }
+  .kpi-value { font-size: 26px; font-weight: 800; color: #1E293B; margin-bottom: 2px; letter-spacing: -0.5px; }
+  .kpi-label { font-size: 9px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+  .kpi-trend { font-size: 8px; color: #CBD5E1; margin-top: 4px; }
+  .kpi-card.dark {
+    background: #1E293B;
+    color: #FFFFFF;
+    border: none;
+  }
+  .kpi-card.dark .kpi-value { color: #FFFFFF; }
+  .kpi-card.dark .kpi-label { color: rgba(255,255,255,0.6); }
+  .kpi-card.dark .kpi-trend { color: rgba(255,255,255,0.35); }
+  .kpi-card.accent-green .kpi-value { color: #22C55E; }
+  .kpi-card.accent-blue .kpi-value { color: #2B6777; }
+  .kpi-card.accent-gold .kpi-value { color: #D4A017; }
 
-  /* SECTION */
-  .section { margin-bottom: 14px; flex-shrink: 0; }
+  /* ========== SECTION ========== */
+  .section { margin-bottom: 18px; flex-shrink: 0; }
   .section-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: #1E293B;
-    margin-bottom: 8px;
-    padding-left: 10px;
-    border-left: 3px solid #2ECC71;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .section-content { padding: 0 2px; }
+  .title-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #22C55E;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .section-content { padding: 0; }
 
-  /* TABLES */
-  .data-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 8px; }
+  /* ========== TABLE ========== */
+  .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 9px; margin-bottom: 10px; border-radius: 10px; overflow: hidden; border: 1px solid #E2E8F0; }
   .data-table thead th {
-    background: #0E1A2B;
-    color: #FFFFFF;
-    font-weight: 700;
-    padding: 9px 10px;
+    background: #F1F5F9;
+    color: #64748B;
+    font-weight: 600;
+    padding: 9px 12px;
     text-align: left;
-    font-size: 9px;
+    font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid #E2E8F0;
   }
-  .data-table thead th:first-child { border-radius: 12px 0 0 0; }
-  .data-table thead th:last-child { border-radius: 0 12px 0 0; }
-  .data-table tbody td { padding: 7px 10px; border-bottom: 1px solid #F1F5F9; color: #475569; }
-  .data-table tbody tr:nth-child(even) { background: #F8FAFC; }
+  .data-table tbody td { padding: 8px 12px; border-bottom: 1px solid #F1F5F9; color: #475569; font-weight: 400; }
+  .data-table tbody tr:nth-child(even) { background: #FAFAFA; }
   .data-table tbody tr:last-child td { border-bottom: none; }
   .data-table tfoot td {
-    padding: 8px 10px;
-    background: #F0FDF4;
+    padding: 9px 12px;
+    background: #F8FAFC;
     font-weight: 700;
-    color: #2ECC71;
-    border-top: 2px solid #2ECC71;
+    color: #1E293B;
+    border-top: 1px solid #E2E8F0;
   }
   .text-right { text-align: right; }
   .text-center { text-align: center; }
+  .table-icon { width: 18px; height: 18px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; margin-right: 8px; vertical-align: middle; }
+  .table-icon.appliance { background: #F1F5F9; color: #64748B; }
 
-  /* COMPARISON */
-  .comparison-grid { display: flex; gap: 10px; margin-bottom: 8px; }
+  /* ========== COMPARISON ========== */
+  .comparison-grid { display: flex; gap: 12px; margin-bottom: 8px; }
   .comparison-card {
     flex: 1;
     background: #FFFFFF;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    padding: 14px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
+    padding: 16px;
   }
   .comparison-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #F1F5F9;
   }
-  .comparison-label { font-size: 11px; font-weight: 700; color: #1E293B; }
-  .comparison-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
-  .badge-success { background: #DCFCE7; color: #2ECC71; }
-  .badge-warning { background: #FEF3C7; color: #F39C12; }
-  .badge-danger { background: #FEE2E2; color: #E74C3C; }
-  .comparison-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
-  .comparison-row .label { color: #7B8CA5; }
+  .comparison-label { font-size: 12px; font-weight: 700; color: #1E293B; }
+  .comparison-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-success { background: #F0FDF4; color: #16A34A; }
+  .badge-warning { background: #FFFBEB; color: #D97706; }
+  .badge-danger { background: #FEF2F2; color: #DC2626; }
+  .badge-neutral { background: #F8FAFC; color: #64748B; }
+  .comparison-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 10px; }
+  .comparison-row .label { color: #94A3B8; }
   .comparison-row .value { font-weight: 600; color: #1E293B; }
-  .comparison-row .value.positive { color: #2ECC71; }
-  .comparison-row .value.negative { color: #E74C3C; }
+  .comparison-row .value.positive { color: #22C55E; }
+  .comparison-row .value.negative { color: #DC2626; }
   .comparison-message {
     margin-top: 8px;
-    padding: 6px 10px;
-    background: #F0FDF4;
-    border-radius: 12px;
-    font-size: 10px;
-    color: #2ECC71;
+    padding: 8px 12px;
+    background: #F8FAFC;
+    border-radius: 10px;
+    font-size: 9px;
+    color: #64748B;
     font-weight: 500;
-    border-left: 3px solid #2ECC71;
+    border-left: 3px solid #22C55E;
   }
-  .chart-container { display: flex; justify-content: center; margin: 8px 0; }
+  .chart-container { display: flex; justify-content: center; margin: 10px 0; }
 
-  /* GOALS */
-  .forecast-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F1F5F9; font-size: 11px; }
-  .forecast-row:last-child { border-bottom: none; }
-  .forecast-row .label { color: #7B8CA5; }
-  .forecast-row .value { font-weight: 600; color: #1E293B; }
+  /* ========== GOALS ========== */
+  .goal-dashboard { display: flex; gap: 10px; margin-bottom: 12px; }
+  .goal-stat-card {
+    flex: 1;
+    background: #F8FAFC;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
+    padding: 12px;
+    text-align: center;
+  }
+  .goal-stat-label { font-size: 8px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
+  .goal-stat-value { font-size: 18px; font-weight: 800; color: #1E293B; }
+  .goal-stat-value.green { color: #22C55E; }
+  .goal-stat-value.blue { color: #2B6777; }
+  .goal-stat-value.orange { color: #D97706; }
   .goal-card {
-    background: #F0FDF4;
-    border-radius: 20px;
-    border: 1px solid #BBF7D0;
-    padding: 14px;
-    margin-bottom: 8px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
+    padding: 16px;
+    margin-bottom: 10px;
   }
-  .goal-title { font-size: 13px; font-weight: 700; color: #2ECC71; margin-bottom: 6px; }
-  .progress-container { margin: 6px 0; }
-  .goal-stats { display: flex; gap: 12px; margin-top: 6px; font-size: 10px; color: #475569; }
-  .goal-stats span { display: flex; align-items: center; gap: 3px; }
-  .goal-stats .stat-value { font-weight: 700; color: #1E293B; }
+  .goal-title { font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 2px; }
+  .goal-desc { font-size: 9px; color: #94A3B8; margin-bottom: 6px; }
 
-  /* INSIGHTS */
-  .insight-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .forecast-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F1F5F9; font-size: 10px; }
+  .forecast-row:last-child { border-bottom: none; }
+  .forecast-row .label { color: #94A3B8; }
+  .forecast-row .value { font-weight: 600; color: #1E293B; }
+
+  /* ========== INSIGHTS ========== */
+  .insight-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
   .insight-card {
-    flex: 1 1 calc(50% - 8px);
-    min-width: 180px;
-    background: #132238;
-    border-radius: 20px;
-    padding: 14px;
+    flex: 1 1 calc(50% - 10px);
+    min-width: 200px;
+    background: #1E293B;
+    border-radius: 16px;
+    padding: 16px;
     color: #FFFFFF;
   }
   .insight-priority {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 8px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-bottom: 4px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
   }
-  .insight-title { font-size: 12px; font-weight: 700; color: #FFFFFF; margin-bottom: 3px; }
-  .insight-desc { font-size: 10px; color: #B8C5D6; line-height: 1.5; }
-  .insight-savings { margin-top: 4px; font-size: 10px; font-weight: 700; color: #7ED957; }
+  .insight-title { font-size: 12px; font-weight: 700; color: #FFFFFF; margin-bottom: 4px; }
+  .insight-desc { font-size: 9px; color: #CBD5E1; line-height: 1.6; }
+  .insight-savings { margin-top: 6px; font-size: 10px; font-weight: 700; color: #4ADE80; }
+  .insight-marker { font-size: 14px; margin-bottom: 6px; }
 
   .efficiency-card {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     background: #FFFFFF;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    padding: 14px;
-    margin-bottom: 8px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
+    padding: 16px;
+    margin-bottom: 10px;
   }
   .efficiency-info { flex: 1; }
-  .efficiency-info h3 { font-size: 13px; font-weight: 700; color: #1E293B; margin-bottom: 3px; }
-  .efficiency-class { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
-  .efficiency-potential { font-size: 11px; color: #7B8CA5; }
-  .efficiency-potential strong { color: #2ECC71; }
+  .efficiency-info h3 { font-size: 10px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .efficiency-class { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .efficiency-potential { font-size: 10px; color: #94A3B8; }
+  .efficiency-potential strong { color: #22C55E; }
 
-  .top-consumers-list { margin: 6px 0; }
-  .top-consumer-row { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px solid #F1F5F9; font-size: 11px; }
+  .top-consumers-list { margin: 4px 0; }
+  .top-consumer-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #F1F5F9; font-size: 10px; }
   .top-consumer-row:last-child { border-bottom: none; }
   .top-consumer-rank {
     width: 20px; height: 20px; border-radius: 50%;
-    background: #2ECC71; color: #FFFFFF;
+    background: #22C55E; color: #FFFFFF;
     font-size: 9px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .top-consumer-rank.rank-2 { background: #7ED957; }
-  .top-consumer-rank.rank-3 { background: #3498DB; }
+  .top-consumer-rank.r2 { background: #4ADE80; }
+  .top-consumer-rank.r3 { background: #2B6777; }
+  .top-consumer-rank.r4 { background: #94A3B8; }
+  .top-consumer-rank.r5 { background: #CBD5E1; color: #1E293B; }
   .top-consumer-name { flex: 1; font-weight: 600; color: #1E293B; }
-  .top-consumer-pct { font-weight: 700; color: #2ECC71; min-width: 40px; text-align: right; }
-  .top-consumer-kwh { color: #7B8CA5; min-width: 55px; text-align: right; }
+  .top-consumer-pct { font-weight: 700; color: #22C55E; min-width: 38px; text-align: right; }
+  .top-consumer-kwh { color: #94A3B8; min-width: 55px; text-align: right; }
 
-  /* CONCLUSION */
-  .conclusion-text {
-    font-size: 12px;
-    color: #475569;
-    line-height: 2;
-    text-align: justify;
-    padding: 14px;
+  /* ========== CONCLUSION ========== */
+  .conclusion-block {
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #E2E8F0;
+  }
+  .conclusion-block.dark {
+    background: #1E293B;
+    color: #FFFFFF;
+    border: none;
+  }
+  .conclusion-block.light {
     background: #F8FAFC;
-    border-radius: 20px;
   }
-  .conclusion-text strong { color: #2ECC71; }
-  .conclusion-highlight {
-    background: #F0FDF4;
-    border-left: 4px solid #2ECC71;
-    padding: 10px 14px;
-    margin-top: 12px;
-    border-radius: 0 12px 12px 0;
-    font-size: 11px;
-    color: #1E293B;
+  .conclusion-block.white {
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
-  .conclusion-highlight strong { color: #2ECC71; }
+  .conclusion-block-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .conclusion-block.dark .conclusion-block-title { color: rgba(255,255,255,0.6); }
+  .conclusion-block.light .conclusion-block-title { color: #64748B; }
+  .conclusion-block.white .conclusion-block-title { color: #64748B; }
+  .conclusion-text {
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.9;
+    text-align: justify;
+  }
+  .conclusion-block.dark .conclusion-text { color: #CBD5E1; }
+  .conclusion-text strong { color: #22C55E; }
+  .conclusion-block.dark .conclusion-text strong { color: #4ADE80; }
+  .conclusion-highlight-list { list-style: none; padding: 0; }
+  .conclusion-highlight-list li {
+    padding: 5px 0 5px 18px;
+    position: relative;
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.6;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .conclusion-highlight-list li:last-child { border-bottom: none; }
+  .conclusion-highlight-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #22C55E;
+  }
+  .conclusion-block.dark .conclusion-highlight-list li { color: #CBD5E1; border-bottom-color: rgba(255,255,255,0.06); }
+  .conclusion-block.dark .conclusion-highlight-list li::before { background: #4ADE80; }
 
-  /* FOOTER */
+  /* ========== ENVIRONMENTAL IMPACT ========== */
+  .impact-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .impact-card {
+    flex: 1 1 calc(33.33% - 10px);
+    min-width: 130px;
+    background: #F8FAFC;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
+    padding: 14px;
+    text-align: center;
+  }
+  .impact-marker {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px auto;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .impact-value { font-size: 18px; font-weight: 800; color: #1E293B; margin-bottom: 2px; }
+  .impact-label { font-size: 8px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ========== FOOTER ========== */
   .page-footer {
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 8px;
     border-top: 1px solid #E2E8F0;
     display: flex;
     justify-content: space-between;
@@ -609,174 +792,161 @@ function buildHTML(data: PDFReportData): string {
     color: #94A3B8;
     flex-shrink: 0;
   }
-  .page-footer .footer-left { font-weight: 700; color: #2ECC71; }
-  .page-footer .footer-right { text-align: right; }
+  .footer-left { font-weight: 700; color: #1E293B; letter-spacing: 1px; }
+  .footer-center { color: #CBD5E1; }
+  .footer-right {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #94A3B8;
+    background: #F1F5F9;
+  }
 
-  .no-data { color: #94A3B8; font-style: italic; font-size: 11px; padding: 10px; text-align: center; }
+  .no-data { color: #94A3B8; font-style: italic; font-size: 10px; padding: 14px; text-align: center; }
   .flex-grow { flex: 1; }
-  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row { display: flex; gap: 12px; margin-bottom: 12px; }
   .col { flex: 1; }
   .info-box {
-    background: #FFFFFF;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    background: #F8FAFC;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #E2E8F0;
     padding: 10px 12px;
     margin-bottom: 6px;
   }
-  .info-box .info-label { font-size: 9px; color: #7B8CA5; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 1px; }
+  .info-box .info-label { font-size: 8px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 2px; }
   .info-box .info-value { font-size: 14px; font-weight: 800; color: #1E293B; }
-  .info-box .info-value.green { color: #2ECC71; }
-  .stats-row { display: flex; gap: 8px; margin-top: 10px; }
-  .stat-chip {
-    flex: 1;
-    text-align: center;
-    padding: 8px;
-    background: #F0FDF4;
-    border-radius: 14px;
-  }
-  .stat-chip .chip-value { font-size: 14px; font-weight: 800; color: #2ECC71; }
-  .stat-chip .chip-label { font-size: 8px; color: #7B8CA5; text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; margin-top: 1px; }
-  .variation-up { color: #E74C3C; }
-  .variation-down { color: #2ECC71; }
-  .variation-neutral { color: #7B8CA5; }
-  .flex-0-6 { flex: 0.6; }
+  .info-box .info-value.green { color: #22C55E; }
+  .spacer { flex: 1; }
+  .no-wrap { white-space: nowrap; }
 </style>
 </head>
 <body>
 
-<!-- ==================== COVER PAGE ==================== -->
+<!-- ==================== COVER ==================== -->
 <div class="page cover-page">
   <div class="cover-glow"></div>
   <div class="cover-glow-2"></div>
   <div class="cover-content">
-    <div class="cover-icon">⚡</div>
-    <div class="cover-logo">EcoPower</div>
+    ${coverImage ? `
+    <img src="${coverImage}" style="width:280px;height:280px;margin-bottom:24px;border-radius:32px;box-shadow:0 0 60px rgba(34,197,94,0.15);" />` : `
+    <div class="cover-seal">✦ Edição Inteligente EcoPower</div>
+    <div class="cover-logo">ECOPOWER</div>
     <div class="cover-subtitle">Smart Energy Monitoring</div>
-    <div class="cover-divider"></div>
-    <div class="cover-title">Relatório Inteligente<br>de Consumo Energético</div>
+    <div class="cover-divider"></div>`}
+    <div class="cover-title">Análise Inteligente<br>de Consumo Energético</div>
     <div class="cover-info">
       <p>Preparado para: <strong>${escapeHtml(userName)}</strong></p>
+      <p>Período: ${formatDate(report.period.start)} a ${formatDate(report.period.end)}</p>
       <p>Data de geração: ${formattedDate}</p>
     </div>
   </div>
   ${generateCoverWaves()}
-  <div class="cover-footer">
+  <div class="cover-meta">
     <p>© ${year} EcoPower — Monitoramento Inteligente de Energia</p>
   </div>
 </div>
 
-<!-- ==================== PAGE 1: EXECUTIVE SUMMARY ==================== -->
+<!-- ==================== PAGE 2: EXECUTIVE SUMMARY ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
-    </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
-  </div>
+  ${pageHeader(2)}
 
-  <h2 class="page-title">Resumo Executivo</h2>
-  <p class="page-subtitle">Visão geral do consumo energético — ${formatDate(report.period.start)} a ${formatDate(report.period.end)}</p>
+  <div class="page-title">Resumo Executivo</div>
+  <div class="page-subtitle">Visão geral do desempenho energético — ${formatDate(report.period.start)} a ${formatDate(report.period.end)}</div>
 
   <div class="kpi-grid">
-    <div class="kpi-card highlight">
-      <div class="kpi-value">${formatNumber(totalConsumption, 1)} kWh</div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:rgba(34,197,94,0.08);color:#22C55E;">kWh</div>
+      <div class="kpi-value" style="font-size:34px;">${formatNumber(totalConsumption, 1)}</div>
       <div class="kpi-label">Consumo Total</div>
-      <div class="kpi-trend">no período analisado</div>
+      <div class="kpi-trend">${formatNumber(totalConsumption, 1)} kWh no período</div>
     </div>
-    <div class="kpi-card highlight">
-      <div class="kpi-value">${formatCurrency(totalCost)}</div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:rgba(212,160,23,0.08);color:#D4A017;">R$</div>
+      <div class="kpi-value" style="font-size:34px;">${formatCurrency(totalCost)}</div>
       <div class="kpi-label">Custo Total</div>
-      <div class="kpi-trend">no período analisado</div>
+      <div class="kpi-trend">${formatCurrency(totalCost)} no período</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-value">${efficiencyScore ? `${efficiencyScore.score}` : '---'}</div>
+      <div class="kpi-icon" style="background:rgba(43,103,119,0.08);color:#2B6777;">%</div>
+      <div class="kpi-value" style="font-size:34px;">${efficiencyScore ? `${efficiencyScore.score}` : '---'}</div>
       <div class="kpi-label">Eficiência</div>
-      <div class="kpi-trend">${efficiencyScore ? escapeHtml(efficiencyScore.classificacao) : 'não disponível'}</div>
+      <div class="kpi-trend">${efficiencyScore ? escapeHtml(efficiencyScore.classificacao) : 'Não disponível'}</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-value" style="color:${getEfficiencyColor(efficiencyScore?.classificacao || '')}">
-        ${efficiencyScore ? escapeHtml(efficiencyScore.classificacao) : '---'}
-      </div>
-      <div class="kpi-label">Classificação</div>
-      <div class="kpi-trend">eficiência energética</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${formatNumber(dailyAverage, 2)} kWh</div>
+      <div class="kpi-icon" style="background:rgba(34,197,94,0.08);color:#22C55E;">M</div>
+      <div class="kpi-value" style="font-size:34px;">${formatNumber(dailyAverage, 2)}</div>
       <div class="kpi-label">Média Diária</div>
-      <div class="kpi-trend">consumo por dia</div>
+      <div class="kpi-trend">${formatNumber(dailyAverage, 2)} kWh/dia</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-value">${forecastData ? formatNumber(forecastData.projectedConsumption, 1) + ' kWh' : '---'}</div>
+      <div class="kpi-icon" style="background:rgba(43,103,119,0.08);color:#2B6777;">P</div>
+      <div class="kpi-value" style="font-size:34px;">${forecastData ? formatNumber(forecastData.projectedConsumption, 1) : '---'}</div>
       <div class="kpi-label">Previsão Mensal</div>
-      <div class="kpi-trend">${forecastData ? formatCurrency(forecastData.projectedCost) : 'não disponível'}</div>
+      <div class="kpi-trend">${forecastData ? formatCurrency(forecastData.projectedCost) : 'Não disponível'}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:rgba(63,163,77,0.08);color:#16A34A;">E</div>
+      <div class="kpi-value" style="font-size:34px;">${economyAmount > 0 ? formatCurrency(economyAmount) : '---'}</div>
+      <div class="kpi-label">Economia</div>
+      <div class="kpi-trend">${economyAmount > 0 ? 'Economia no período' : 'Sem economia'}</div>
     </div>
   </div>
 
   ${monthVar ? `
-  <div class="row" style="margin-top:2px;">
+  <div class="row" style="margin-top:0;">
     <div class="col">
-      <div class="comparison-card" style="margin:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #E2E8F0;">
-          <span style="font-size:11px;font-weight:700;color:#1E293B;">Comparativo Mensal</span>
+      <div class="comparison-card" style="margin:0;padding:14px;">
+        <div class="comparison-header" style="margin-bottom:8px;">
+          <span class="comparison-label" style="font-size:11px;">Comparativo Mensal</span>
           <span class="comparison-badge ${monthVar.isSavings ? 'badge-success' : Math.abs(monthVar.consumptionPercent) > 10 ? 'badge-danger' : 'badge-warning'}">
-            ${monthVar.isSavings ? '▼ Economia' : '▲ Aumento'}
+            ${monthVar.isSavings ? '▼ Economia ' + formatNumber(Math.abs(monthVar.consumptionPercent), 1) + '%' : '▲ Aumento ' + formatNumber(monthVar.consumptionPercent, 1) + '%'}
           </span>
         </div>
-        <div class="comparison-row"><span class="label">Variação consumo:</span><span class="value ${monthVar.consumptionPercent < 0 ? 'positive' : monthVar.consumptionPercent > 0 ? 'negative' : ''}">${monthVar.consumptionPercent >= 0 ? '+' : ''}${formatNumber(monthVar.consumptionPercent, 1)}%</span></div>
-        <div class="comparison-row"><span class="label">Variação custo:</span><span class="value ${monthVar.costPercent < 0 ? 'positive' : monthVar.costPercent > 0 ? 'negative' : ''}">${monthVar.costPercent >= 0 ? '+' : ''}${formatNumber(monthVar.costPercent, 1)}%</span></div>
+        <div class="comparison-row"><span class="label">Consumo atual:</span><span class="value">${formatNumber(monthComparison!.currentPeriod.consumption, 1)} kWh</span></div>
+        <div class="comparison-row"><span class="label">Consumo anterior:</span><span class="value">${formatNumber(monthComparison!.previousPeriod.consumption, 1)} kWh</span></div>
+        <div class="comparison-row"><span class="label">Variação:</span><span class="value ${monthVar.consumptionPercent < 0 ? 'positive' : 'negative'}">${monthVar.consumptionPercent >= 0 ? '+' : ''}${formatNumber(monthVar.consumptionPercent, 1)}%</span></div>
         ${monthVar.isSavings ? `<div class="comparison-row"><span class="label">Economia estimada:</span><span class="value positive">${formatCurrency(Math.abs(monthVar.costDiff))}</span></div>` : ''}
-        <div class="comparison-message">${escapeHtml(monthComparison!.message)}</div>
       </div>
     </div>
     <div class="col">
-      <div class="comparison-card" style="margin:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #E2E8F0;">
-          <span style="font-size:11px;font-weight:700;color:#1E293B;">Comparativo Semanal</span>
+      <div class="comparison-card" style="margin:0;padding:14px;">
+        <div class="comparison-header" style="margin-bottom:8px;">
+          <span class="comparison-label" style="font-size:11px;">Comparativo Semanal</span>
           <span class="comparison-badge ${weekVar?.isSavings ? 'badge-success' : 'badge-warning'}">${weekVar?.isSavings ? '▼ Economia' : '▲ Aumento'}</span>
         </div>
-        <div class="comparison-row"><span class="label">Variação:</span><span class="value ${weekVar && weekVar.consumptionPercent < 0 ? 'positive' : weekVar && weekVar.consumptionPercent > 0 ? 'negative' : ''}">${weekVar ? `${weekVar.consumptionPercent >= 0 ? '+' : ''}${formatNumber(weekVar.consumptionPercent, 1)}%` : '---'}</span></div>
+        <div class="comparison-row"><span class="label">Variação:</span><span class="value ${weekVar && weekVar.consumptionPercent < 0 ? 'positive' : 'negative'}">${weekVar ? `${weekVar.consumptionPercent >= 0 ? '+' : ''}${formatNumber(weekVar.consumptionPercent, 1)}%` : '---'}</span></div>
         <div class="comparison-row"><span class="label">Atual:</span><span class="value">${formatNumber(weekComparison?.currentPeriod.consumption ?? 0, 1)} kWh</span></div>
         <div class="comparison-row"><span class="label">Anterior:</span><span class="value">${formatNumber(weekComparison?.previousPeriod.consumption ?? 0, 1)} kWh</span></div>
-        ${weekComparison ? `<div class="comparison-message">${escapeHtml(weekComparison.message)}</div>` : ''}
       </div>
     </div>
-  </div>
-  ` : ''}
+  </div>` : ''}
 
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 2<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(2)}
 </div>
 
-<!-- ==================== PAGE 2: CONSUMPTION ==================== -->
+<!-- ==================== PAGE 3: CONSUMPTION ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
-    </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
-  </div>
+  ${pageHeader(3)}
 
-  <h2 class="page-title">Análise de Consumo</h2>
-  <p class="page-subtitle">Detalhamento do consumo por aparelho — ${formatDate(report.period.start)} a ${formatDate(report.period.end)}</p>
+  <div class="page-title">Análise de Consumo</div>
+  <div class="page-subtitle">Detalhamento do consumo por aparelho no período</div>
 
   <table class="data-table">
     <thead><tr><th>Aparelho</th><th class="text-right">Consumo (kWh)</th><th class="text-right">Custo (R$)</th><th class="text-right">Participação</th></tr></thead>
     <tbody>
       ${report.applianceStats.map(stat => `
       <tr>
-        <td>${escapeHtml(stat.name)}</td>
+        <td><span class="table-icon appliance">i</span>${escapeHtml(stat.name)}</td>
         <td class="text-right">${formatNumber(stat.consumption, 2)}</td>
         <td class="text-right">${formatCurrency(stat.cost)}</td>
         <td class="text-right">${formatNumber(stat.percentage, 1)}%</td>
       </tr>`).join('')}
-      ${report.applianceStats.length === 0 ? '<tr><td colspan="4" class="text-center no-data" style="padding:20px;">Nenhum dado de consumo disponível para o período.</td></tr>' : ''}
+      ${report.applianceStats.length === 0 ? '<tr><td colspan="4" class="text-center no-data" style="padding:24px;">Nenhum dado de consumo disponível para o período.</td></tr>' : ''}
     </tbody>
     <tfoot>
       <tr><td>TOTAL</td><td class="text-right">${formatNumber(totalConsumption, 2)} kWh</td><td class="text-right">${formatCurrency(totalCost)}</td><td class="text-right">100%</td></tr>
@@ -785,200 +955,158 @@ function buildHTML(data: PDFReportData): string {
 
   ${report.applianceStats.length > 0 ? `
   <div class="section">
-    <div class="section-title">Gráfico de Consumo</div>
+    ${sectionTitle('Gráfico de Consumo')}
     <div class="section-content">
       <div class="chart-container">${generateConsumptionChart(report.applianceStats)}</div>
     </div>
   </div>` : ''}
 
-  <div class="stats-row">
-    <div class="stat-chip"><div class="chip-value">${formatNumber(totalConsumption, 1)} kWh</div><div class="chip-label">Total</div></div>
-    <div class="stat-chip"><div class="chip-value">${formatCurrency(totalCost)}</div><div class="chip-label">Gasto</div></div>
-    <div class="stat-chip"><div class="chip-value">${formatNumber(dailyAverage, 2)} kWh</div><div class="chip-label">Média</div></div>
-    ${report.topConsumer ? `<div class="stat-chip"><div class="chip-value">${formatNumber(report.topConsumer.percentage, 1)}%</div><div class="chip-label">Maior</div></div>` : ''}
-  </div>
-
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 3<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(3)}
 </div>
 
-<!-- ==================== PAGE 3: COMPARISON ==================== -->
+<!-- ==================== PAGE 4: COMPARISON ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
-    </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
-  </div>
+  ${pageHeader(4)}
 
-  <h2 class="page-title">Comparação de Períodos</h2>
-  <p class="page-subtitle">Análise comparativa entre períodos para identificar tendências de consumo.</p>
+  <div class="page-title">Comparação de Períodos</div>
+  <div class="page-subtitle">Análise comparativa entre períodos para identificar tendências de consumo.</div>
 
   ${monthComparison ? `
   <div class="section">
-    <div class="section-title">Mês Atual × Mês Anterior</div>
-    <div class="section-content">
-      <div class="comparison-card">
-        <div class="comparison-header">
-          <span class="comparison-label">${escapeHtml(monthComparison.currentPeriod.label)} vs ${escapeHtml(monthComparison.previousPeriod.label)}</span>
-          <span class="comparison-badge ${monthComparison.variation.isSavings ? 'badge-success' : 'badge-danger'}">
-            ${monthComparison.variation.isSavings ? '▼ ' + formatNumber(Math.abs(monthComparison.variation.consumptionPercent), 1) + '%' : '▲ ' + formatNumber(monthComparison.variation.consumptionPercent, 1) + '%'}
-          </span>
-        </div>
-        <div class="row" style="gap:12px;">
-          <div class="col">
-            <div class="comparison-row"><span class="label">Consumo atual:</span><span class="value">${formatNumber(monthComparison.currentPeriod.consumption, 1)} kWh</span></div>
-            <div class="comparison-row"><span class="label">Consumo anterior:</span><span class="value">${formatNumber(monthComparison.previousPeriod.consumption, 1)} kWh</span></div>
-            <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${monthComparison.variation.consumptionDiff < 0 ? 'positive' : 'negative'}">${monthComparison.variation.consumptionDiff >= 0 ? '+' : ''}${formatNumber(monthComparison.variation.consumptionDiff, 1)} kWh</span></div>
-          </div>
-          <div class="col">
-            <div class="comparison-row"><span class="label">Custo atual:</span><span class="value">${formatCurrency(monthComparison.currentPeriod.cost)}</span></div>
-            <div class="comparison-row"><span class="label">Custo anterior:</span><span class="value">${formatCurrency(monthComparison.previousPeriod.cost)}</span></div>
-            <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${monthComparison.variation.costDiff < 0 ? 'positive' : 'negative'}">${monthComparison.variation.costDiff >= 0 ? '+' : ''}${formatCurrency(Math.abs(monthComparison.variation.costDiff))}</span></div>
-          </div>
-        </div>
-        <div class="chart-container">${generateComparisonChart(monthComparison)}</div>
-        <div class="comparison-message">${escapeHtml(monthComparison.message)}</div>
+    ${sectionTitle('Mês Atual × Mês Anterior')}
+    <div class="comparison-card">
+      <div class="comparison-header">
+        <span class="comparison-label">${escapeHtml(monthComparison.currentPeriod.label)} vs ${escapeHtml(monthComparison.previousPeriod.label)}</span>
+        <span class="comparison-badge ${monthComparison.variation.isSavings ? 'badge-success' : 'badge-danger'}">
+          ${monthComparison.variation.isSavings ? '▼ ' + formatNumber(Math.abs(monthComparison.variation.consumptionPercent), 1) + '%' : '▲ ' + formatNumber(monthComparison.variation.consumptionPercent, 1) + '%'}
+        </span>
       </div>
+      <div class="row" style="gap:12px;margin-bottom:8px;">
+        <div class="col">
+          <div class="comparison-row"><span class="label">Consumo atual:</span><span class="value">${formatNumber(monthComparison.currentPeriod.consumption, 1)} kWh</span></div>
+          <div class="comparison-row"><span class="label">Consumo anterior:</span><span class="value">${formatNumber(monthComparison.previousPeriod.consumption, 1)} kWh</span></div>
+          <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${monthComparison.variation.consumptionDiff < 0 ? 'positive' : 'negative'}">${monthComparison.variation.consumptionDiff >= 0 ? '+' : ''}${formatNumber(monthComparison.variation.consumptionDiff, 1)} kWh</span></div>
+        </div>
+        <div class="col">
+          <div class="comparison-row"><span class="label">Custo atual:</span><span class="value">${formatCurrency(monthComparison.currentPeriod.cost)}</span></div>
+          <div class="comparison-row"><span class="label">Custo anterior:</span><span class="value">${formatCurrency(monthComparison.previousPeriod.cost)}</span></div>
+          <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${monthComparison.variation.costDiff < 0 ? 'positive' : 'negative'}">${monthComparison.variation.costDiff >= 0 ? '+' : ''}${formatCurrency(Math.abs(monthComparison.variation.costDiff))}</span></div>
+        </div>
+      </div>
+      <div class="chart-container">${generateComparisonChart(monthComparison)}</div>
+      <div class="comparison-message">${escapeHtml(monthComparison.message)}</div>
     </div>
   </div>` : '<p class="no-data">Dados de comparação mensal não disponíveis.</p>'}
 
   ${weekComparison ? `
-  <div class="section">
-    <div class="section-title">Semana Atual × Semana Anterior</div>
-    <div class="section-content">
-      <div class="comparison-card">
-        <div class="comparison-header">
-          <span class="comparison-label">${escapeHtml(weekComparison.currentPeriod.label)} vs ${escapeHtml(weekComparison.previousPeriod.label)}</span>
-          <span class="comparison-badge ${weekComparison.variation.isSavings ? 'badge-success' : 'badge-warning'}">${weekComparison.variation.isSavings ? '▼ Economia' : '▲ Aumento'}</span>
-        </div>
-        <div class="row" style="gap:12px;">
-          <div class="col">
-            <div class="comparison-row"><span class="label">Consumo atual:</span><span class="value">${formatNumber(weekComparison.currentPeriod.consumption, 1)} kWh</span></div>
-            <div class="comparison-row"><span class="label">Consumo anterior:</span><span class="value">${formatNumber(weekComparison.previousPeriod.consumption, 1)} kWh</span></div>
-            <div class="comparison-row"><span class="label">Variação:</span><span class="value ${weekComparison.variation.consumptionPercent < 0 ? 'positive' : 'negative'}">${weekComparison.variation.consumptionPercent >= 0 ? '+' : ''}${formatNumber(weekComparison.variation.consumptionPercent, 1)}%</span></div>
-          </div>
-          <div class="col">
-            <div class="comparison-row"><span class="label">Custo atual:</span><span class="value">${formatCurrency(weekComparison.currentPeriod.cost)}</span></div>
-            <div class="comparison-row"><span class="label">Custo anterior:</span><span class="value">${formatCurrency(weekComparison.previousPeriod.cost)}</span></div>
-          </div>
-        </div>
-        <div class="chart-container">${generateComparisonChart(weekComparison)}</div>
-        <div class="comparison-message">${escapeHtml(weekComparison.message)}</div>
+  <div class="section" style="margin-top:12px;">
+    ${sectionTitle('Semana Atual × Semana Anterior')}
+    <div class="comparison-card">
+      <div class="comparison-header">
+        <span class="comparison-label">${escapeHtml(weekComparison.currentPeriod.label)} vs ${escapeHtml(weekComparison.previousPeriod.label)}</span>
+        <span class="comparison-badge ${weekComparison.variation.isSavings ? 'badge-success' : 'badge-warning'}">${weekComparison.variation.isSavings ? '▼ Economia' : '▲ Aumento'}</span>
       </div>
+      <div class="row" style="gap:12px;margin-bottom:8px;">
+        <div class="col">
+          <div class="comparison-row"><span class="label">Consumo atual:</span><span class="value">${formatNumber(weekComparison.currentPeriod.consumption, 1)} kWh</span></div>
+          <div class="comparison-row"><span class="label">Consumo anterior:</span><span class="value">${formatNumber(weekComparison.previousPeriod.consumption, 1)} kWh</span></div>
+          <div class="comparison-row"><span class="label">Variação:</span><span class="value ${weekComparison.variation.consumptionPercent < 0 ? 'positive' : 'negative'}">${weekComparison.variation.consumptionPercent >= 0 ? '+' : ''}${formatNumber(weekComparison.variation.consumptionPercent, 1)}%</span></div>
+        </div>
+        <div class="col">
+          <div class="comparison-row"><span class="label">Custo atual:</span><span class="value">${formatCurrency(weekComparison.currentPeriod.cost)}</span></div>
+          <div class="comparison-row"><span class="label">Custo anterior:</span><span class="value">${formatCurrency(weekComparison.previousPeriod.cost)}</span></div>
+        </div>
+      </div>
+      <div class="chart-container">${generateComparisonChart(weekComparison)}</div>
+      <div class="comparison-message">${escapeHtml(weekComparison.message)}</div>
     </div>
   </div>` : ''}
 
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 4<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(4)}
 </div>
 
-<!-- ==================== PAGE 4: GOALS & FORECAST ==================== -->
+<!-- ==================== PAGE 5: GOALS & FORECAST ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
-    </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
-  </div>
+  ${pageHeader(5)}
 
-  <h2 class="page-title">Metas e Previsões</h2>
-  <p class="page-subtitle">Acompanhamento das metas de economia e projeções de consumo para o mês de ${getMonthName(new Date())}.</p>
+  <div class="page-title">Metas e Previsões</div>
+  <div class="page-subtitle">Acompanhamento de metas de economia e projeções de consumo.</div>
+
+  ${activeGoal ? `
+  <div class="goal-card" style="margin-bottom:12px;">
+    <div class="goal-title">${escapeHtml(activeGoal.titulo)}</div>
+    ${generateGoalProgressBar(activeGoal.progresso, activeGoal.valorAlvo)}
+    <div class="goal-dashboard">
+      <div class="goal-stat-card">
+        <div class="goal-stat-label">Meta</div>
+        <div class="goal-stat-value green">${formatNumber(activeGoal.valorAlvo, 1)}</div>
+      </div>
+      <div class="goal-stat-card">
+        <div class="goal-stat-label">Atual</div>
+        <div class="goal-stat-value blue">${formatNumber(activeGoal.progresso, 1)}</div>
+      </div>
+      <div class="goal-stat-card">
+        <div class="goal-stat-label">Restante</div>
+        <div class="goal-stat-value orange">${formatNumber(Math.max(0, activeGoal.valorAlvo - activeGoal.progresso), 1)}</div>
+      </div>
+    </div>
+  </div>` : '<p class="no-data" style="margin-bottom:12px;">Nenhuma meta ativa no momento.</p>'}
 
   <div class="row">
     <div class="col">
       <div class="section">
-        <div class="section-title">Meta de Consumo</div>
-        ${activeGoal ? `
-        <div class="goal-card">
-          <div class="goal-title">${escapeHtml(activeGoal.titulo)}</div>
-          <div class="progress-container">${generateGoalProgressBar(activeGoal.progresso, activeGoal.valorAlvo)}</div>
-          <div class="goal-stats">
-            <span>Progresso: <span class="stat-value">${formatNumber(activeGoal.progresso, 1)}</span></span>
-            <span>Meta: <span class="stat-value">${formatNumber(activeGoal.valorAlvo, 1)}</span></span>
-            <span>Restante: <span class="stat-value">${formatNumber(Math.max(0, activeGoal.valorAlvo - activeGoal.progresso), 1)}</span></span>
-          </div>
-        </div>` : `
-        <div class="info-box"><p class="no-data">Nenhuma meta ativa no momento.</p></div>`}
-        ${goals.filter(g => !g.ativa).length > 0 ? `<div style="margin-top:6px;"><p style="font-size:10px;color:#94A3B8;">${goals.filter(g => !g.ativa).length} meta(s) inativa(s) não exibida(s).</p></div>` : ''}
-      </div>
-    </div>
-    <div class="col">
-      <div class="section">
-        <div class="section-title">Previsão Mensal</div>
+        ${sectionTitle('Previsão Mensal')}
         ${forecastData ? `
         <div class="info-box"><div class="info-label">Consumo atual</div><div class="info-value green">${formatNumber(forecastData.currentConsumption, 1)} kWh</div></div>
         <div class="info-box"><div class="info-label">Previsão para o mês</div><div class="info-value green">${formatNumber(forecastData.projectedConsumption, 1)} kWh</div></div>
         <div class="info-box"><div class="info-label">Custo projetado</div><div class="info-value green">${formatCurrency(forecastData.projectedCost)}</div></div>
-        <div class="info-box"><div class="info-label">Média diária atual</div><div class="info-value" style="font-size:13px;">${formatNumber(forecastData.dailyAverage, 2)} kWh</div></div>` : `
-        <div class="info-box"><p class="no-data">Dados de previsão não disponíveis.</p></div>`}
+        <div class="info-box"><div class="info-label">Média diária</div><div class="info-value" style="font-size:13px;">${formatNumber(forecastData.dailyAverage, 2)} kWh</div></div>` : `
+        <div class="info-box"><p class="no-data" style="padding:4px;">Previsão não disponível.</p></div>`}
       </div>
     </div>
-  </div>
-
-  ${forecastData && forecastData.recommendations.length > 0 ? `
-  <div class="section">
-    <div class="section-title">Recomendações</div>
-    <div class="section-content" style="background:#F8FAFC;border-radius:20px;padding:10px;">
-      <ul style="list-style:none;padding:0;">
-        ${forecastData.recommendations.map(rec => `
-        <li style="padding:3px 0 3px 18px;position:relative;font-size:11px;color:#475569;line-height:1.6;">
-          <span style="position:absolute;left:0;top:6px;width:7px;height:7px;border-radius:50%;background:#2ECC71;display:inline-block;"></span>
-          ${escapeHtml(rec)}
-        </li>`).join('')}
-      </ul>
+    <div class="col">
+      ${forecastData && forecastData.recommendations.length > 0 ? `
+      <div class="section">
+        ${sectionTitle('Recomendações')}
+          <div style="background:#F8FAFC;border-radius:14px;padding:12px;">
+          <ul style="list-style:none;padding:0;">
+            ${forecastData.recommendations.map(rec => `
+            <li style="padding:4px 0 4px 18px;position:relative;font-size:10px;color:#475569;line-height:1.6;">
+              <span style="position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;background:#22C55E;display:inline-block;"></span>
+              ${escapeHtml(rec)}
+            </li>`).join('')}
+          </ul>
+        </div>
+      </div>` : ''}
     </div>
-  </div>` : ''}
+  </div>
 
   ${forecastData?.goalComparison ? `
   <div class="section">
-    <div class="section-title">Comparação com a Meta</div>
-    <div class="section-content">
-      <div class="comparison-card">
-        <div class="comparison-row"><span class="label">Meta:</span><span class="value">${escapeHtml(forecastData.goalComparison.goalTitle)}</span></div>
-        <div class="comparison-row"><span class="label">Valor:</span><span class="value">${formatCurrency(forecastData.goalComparison.goalTarget)}</span></div>
-        <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${forecastData.goalComparison.isAbove ? 'negative' : 'positive'}">${forecastData.goalComparison.isAbove ? '+' : ''}${formatCurrency(forecastData.goalComparison.difference)}</span></div>
-        <div class="comparison-row"><span class="label">Percentual:</span><span class="value ${forecastData.goalComparison.isAbove ? 'negative' : 'positive'}">${forecastData.goalComparison.isAbove ? '+' : ''}${formatNumber(forecastData.goalComparison.percentageAbove, 1)}%</span></div>
-        <div class="comparison-message">${forecastData.goalComparison.isAbove ? `O consumo projetado está ${formatNumber(forecastData.goalComparison.percentageAbove, 1)}% acima da meta. Reveja seus hábitos de consumo.` : `O consumo projetado está ${formatNumber(Math.abs(forecastData.goalComparison.percentageAbove), 1)}% abaixo da meta. Continue assim!`}</div>
-      </div>
+    ${sectionTitle('Comparação com a Meta')}
+    <div class="comparison-card">
+      <div class="comparison-row"><span class="label">Meta:</span><span class="value">${escapeHtml(forecastData.goalComparison.goalTitle)}</span></div>
+      <div class="comparison-row"><span class="label">Valor alvo:</span><span class="value">${formatCurrency(forecastData.goalComparison.goalTarget)}</span></div>
+      <div class="comparison-row"><span class="label">Diferença:</span><span class="value ${forecastData.goalComparison.isAbove ? 'negative' : 'positive'}">${forecastData.goalComparison.isAbove ? '+' : ''}${formatCurrency(forecastData.goalComparison.difference)}</span></div>
+      <div class="comparison-row"><span class="label">Percentual:</span><span class="value ${forecastData.goalComparison.isAbove ? 'negative' : 'positive'}">${forecastData.goalComparison.isAbove ? '+' : ''}${formatNumber(forecastData.goalComparison.percentageAbove, 1)}%</span></div>
+      <div class="comparison-message">${forecastData.goalComparison.isAbove ? `O consumo projetado está ${formatNumber(forecastData.goalComparison.percentageAbove, 1)}% acima da meta. Reveja seus hábitos de consumo.` : `O consumo projetado está ${formatNumber(Math.abs(forecastData.goalComparison.percentageAbove), 1)}% abaixo da meta. Continue assim!`}</div>
     </div>
   </div>` : ''}
 
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 5<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(5)}
 </div>
 
-<!-- ==================== PAGE 5: INSIGHTS ==================== -->
+<!-- ==================== PAGE 6: INSIGHTS ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
-    </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
-  </div>
+  ${pageHeader(6)}
 
-  <h2 class="page-title">Insights Inteligentes</h2>
-  <p class="page-subtitle">Análise inteligente do perfil de consumo com recomendações personalizadas.</p>
+  <div class="page-title">Insights Inteligentes</div>
+  <div class="page-subtitle">Análise do perfil de consumo com recomendações personalizadas.</div>
 
   <div class="row">
-    <div class="col flex-0-6">
+    <div class="col" style="flex:0.55;">
       <div class="section">
-        <div class="section-title">Eficiência Energética</div>
+        ${sectionTitle('Eficiência Energética')}
         ${efficiencyScore ? `
         <div class="efficiency-card">
           ${generateEfficiencyGauge(efficiencyScore.score)}
@@ -992,11 +1120,11 @@ function buildHTML(data: PDFReportData): string {
     </div>
     <div class="col">
       <div class="section">
-        <div class="section-title">Top Consumidores</div>
+        ${sectionTitle('Top Consumidores')}
         <div class="top-consumers-list">
           ${topConsumers.slice(0, 5).map((c, i) => `
           <div class="top-consumer-row">
-            <div class="top-consumer-rank ${i === 0 ? '' : i === 1 ? 'rank-2' : 'rank-3'}">${i + 1}</div>
+            <div class="top-consumer-rank ${i === 0 ? '' : i === 1 ? 'r2' : i === 2 ? 'r3' : i === 3 ? 'r4' : 'r5'}">${i + 1}</div>
             <span class="top-consumer-name">${escapeHtml(c.name)}</span>
             <span class="top-consumer-pct">${formatNumber(c.percentage, 1)}%</span>
             <span class="top-consumer-kwh">${formatNumber(c.consumption, 1)} kWh</span>
@@ -1008,68 +1136,116 @@ function buildHTML(data: PDFReportData): string {
   </div>
 
   <div class="section">
-    <div class="section-title">Recomendações Automáticas</div>
+    ${sectionTitle('Recomendações Automáticas')}
     <div class="insight-grid">
-      ${recommendations.slice(0, 4).map(insight => `
+      ${recommendations.slice(0, 4).map(insight => {
+        const pColor = getPriorityColor(insight.prioridade);
+        return `
       <div class="insight-card">
-        <div class="insight-priority" style="background:${getPriorityColor(insight.prioridade)}25;color:${getPriorityColor(insight.prioridade)};">
+        <div class="insight-marker" style="color:${pColor};">${insight.prioridade === 'alta' ? '!!' : insight.prioridade === 'media' ? '!' : 'i'}</div>
+        <div class="insight-priority" style="background:${pColor}18;color:${pColor};">
           ${getPriorityLabel(insight.prioridade)}
         </div>
         <div class="insight-title">${escapeHtml(insight.titulo)}</div>
         <div class="insight-desc">${escapeHtml(insight.descricao)}</div>
         ${insight.economiaPotencial > 0 ? `<div class="insight-savings">Economia potencial: ${formatCurrency(insight.economiaPotencial)}/mês</div>` : ''}
-      </div>`).join('')}
+      </div>`;}).join('')}
       ${recommendations.length === 0 ? '<p class="no-data">Nenhuma recomendação disponível no momento.</p>' : ''}
     </div>
   </div>
 
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 6<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(6)}
 </div>
 
-<!-- ==================== PAGE 6: CONCLUSION ==================== -->
+<!-- ==================== PAGE 7: IMPACT + CONCLUSION ==================== -->
 <div class="page">
-  <div class="page-header">
-    <div class="header-left">
-      <span class="header-logo">⚡ EcoPower</span>
-      <span class="header-divider">|</span>
-      <span class="header-subtitle">Relatório de Consumo Energético</span>
+  ${pageHeader(7)}
+
+  <div class="page-title">Impacto e Conclusão</div>
+  <div class="page-subtitle">Sustentabilidade, impacto ambiental e considerações finais.</div>
+
+  <div class="section">
+    ${sectionTitle('Impacto Ambiental')}
+    <div class="impact-grid" style="margin-bottom:12px;">
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(43,103,119,0.08);color:#2B6777;">CO₂</div>
+        <div class="impact-value" style="color:#2B6777;">${formatNumber(co2Avoided, 1)} kg</div>
+        <div class="impact-label">CO₂ Evitado</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(34,197,94,0.08);color:#22C55E;">Arv</div>
+        <div class="impact-value" style="color:#22C55E;">${treesEquivalent}</div>
+        <div class="impact-label">Árvores Equivalentes</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(124,179,66,0.08);color:#4ADE80;">kWh</div>
+        <div class="impact-value" style="color:#4ADE80;">${formatNumber(totalConsumption, 1)}</div>
+        <div class="impact-label">Energia (kWh)</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(34,197,94,0.08);color:#22C55E;">R$</div>
+        <div class="impact-value" style="color:#22C55E;">${formatCurrency(totalCost)}</div>
+        <div class="impact-label">Impacto Financeiro</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(43,103,119,0.08);color:#2B6777;">Sc</div>
+        <div class="impact-value" style="color:#2B6777;">${efficiencyScore ? `${efficiencyScore.score}` : '---'}</div>
+        <div class="impact-label">Score Eficiência</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-marker" style="background:rgba(63,163,77,0.08);color:#16A34A;">M</div>
+        <div class="impact-value" style="color:#16A34A;">${formatNumber(dailyAverage, 2)}</div>
+        <div class="impact-label">Média (kWh/dia)</div>
+      </div>
     </div>
-    <div class="header-right">${formattedDate} | v1.0</div>
   </div>
 
-  <h2 class="page-title">Conclusão</h2>
-  <p class="page-subtitle">Resumo e considerações finais sobre o desempenho energético do período.</p>
+  <div class="section">
+    ${sectionTitle('Resumo Final')}
+    <div class="conclusion-block light">
+      <div class="conclusion-text">${generateConclusionText(data)}</div>
+    </div>
+  </div>
 
-  <div class="conclusion-text">${generateConclusionText(data)}</div>
+  <div class="row" style="margin-bottom:12px;">
+    <div class="col">
+      <div class="conclusion-block white" style="margin:0;">
+        <div class="conclusion-block-title" style="color:#22C55E;">Impacto Financeiro</div>
+        <ul class="conclusion-highlight-list">
+          <li>Custo total no período: <strong>${formatCurrency(totalCost)}</strong></li>
+          <li>Média diária: <strong>${formatCurrency(totalCost / Math.max(Math.ceil((new Date(report.period.end).getTime() - new Date(report.period.start).getTime()) / 86400000), 1))}</strong></li>
+          ${efficiencyScore && efficiencyScore.economiaPotencial > 0 ? `<li>Potencial de economia: <strong>${formatCurrency(efficiencyScore.economiaPotencial)}/mês</strong></li>` : ''}
+          ${economyAmount > 0 ? `<li>Economia no período: <strong style="color:#22C55E;">${formatCurrency(economyAmount)}</strong></li>` : ''}
+        </ul>
+      </div>
+    </div>
+    <div class="col">
+      <div class="conclusion-block white" style="margin:0;">
+        <div class="conclusion-block-title" style="color:#2B6777;">Próximos Passos</div>
+        <ul class="conclusion-highlight-list">
+          ${report.topConsumer ? `<li>Reduza o uso de <strong>${escapeHtml(report.topConsumer.name)}</strong></li>` : ''}
+          ${!activeGoal ? '<li>Defina uma meta de economia</li>' : '<li>Acompanhe sua meta ativa</li>'}
+          <li>Monitore os alertas do sistema</li>
+          <li>Revise os insights mensalmente</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   ${report.topConsumer ? `
-  <div class="conclusion-highlight">
-    <strong>⚡ Dica EcoPower:</strong> O <strong>${escapeHtml(report.topConsumer.name)}</strong> é responsável por ${formatNumber(report.topConsumer.percentage, 1)}% do seu consumo total. Reduzir o tempo de uso deste aparelho pode gerar uma economia significativa na sua conta de energia.
-  </div>` : ''}
-
-  ${efficiencyScore && efficiencyScore.economiaPotencial > 0 ? `
-  <div class="conclusion-highlight">
-    <strong>💰 Potencial de Economia:</strong> Aplicando as recomendações do sistema, você pode economizar até <strong>${formatCurrency(efficiencyScore.economiaPotencial)} por mês</strong>, o que representa ${formatCurrency(efficiencyScore.economiaPotencial * 12)} ao ano.
-  </div>` : ''}
-
-  <div style="margin-top:auto;padding-top:16px;text-align:center;">
-    <div style="font-size:20px;font-weight:800;letter-spacing:2px;margin-bottom:2px;background:linear-gradient(135deg,#2ECC71,#3498DB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚡ EcoPower</div>
-    <div style="font-size:10px;color:#7B8CA5;">Smart Energy Monitoring</div>
-    <div style="margin-top:8px;font-size:9px;color:#CBD5E1;">
-      © ${year} EcoPower — Todos os direitos reservados.<br>
-      Documento gerado automaticamente em ${formattedDate}.
+  <div class="conclusion-block" style="background:#F0FDF4;border-left:4px solid #22C55E;border-radius:0 14px 14px 0;padding:12px 16px;margin-bottom:12px;">
+    <div style="font-size:10px;color:#475569;line-height:1.7;">
+      <strong style="color:#22C55E;">Dica EcoPower:</strong> O <strong>${escapeHtml(report.topConsumer.name)}</strong> é responsável por ${formatNumber(report.topConsumer.percentage, 1)}% do seu consumo total. Reduzir o tempo de uso deste aparelho pode gerar uma economia significativa na sua conta de energia.
     </div>
+  </div>` : ''}
+
+  <div style="text-align:center;padding:16px;background:#F8FAFC;border-radius:16px;border:1px solid #E2E8F0;margin-bottom:12px;">
+    <div style="font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Saiba mais sobre o EcoPower</div>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://ecopower2026.netlify.app/" alt="QR Code EcoPower" style="width:100px;height:100px;border-radius:8px;" />
+    <div style="font-size:9px;color:#22C55E;font-weight:600;margin-top:6px;">ecopower2026.netlify.app</div>
   </div>
 
-  <div class="page-footer">
-    <span class="footer-left">⚡ EcoPower</span>
-    <span>${formattedDate}</span>
-    <span class="footer-right">Página 7<br><span style="font-size:7px;">Documento gerado automaticamente pelo sistema EcoPower.</span></span>
-  </div>
+  ${pageFooter(7)}
 </div>
 
 </body>
@@ -1084,7 +1260,18 @@ function getFileName(report: Report): string {
 }
 
 export async function generateProfessionalPDF(data: PDFReportData): Promise<{ uri: string; base64?: string }> {
-  const html = buildHTML(data);
+  let coverImage: string | undefined;
+
+  try {
+    const asset = Asset.fromModule(require('../../assets/principal.png'));
+    await asset.downloadAsync();
+    if (asset.localUri) {
+      coverImage = await readAsStringAsync(asset.localUri, { encoding: EncodingType.Base64 });
+      coverImage = `data:image/png;base64,${coverImage}`;
+    }
+  } catch { }
+
+  const html = buildHTML(data, coverImage);
 
   if (Platform.OS === 'web') {
     const iframe = document.createElement('iframe');

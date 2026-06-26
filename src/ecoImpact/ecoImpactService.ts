@@ -179,11 +179,11 @@ export function getDefaultAchievements(): Achievement[] {
 
 export function getCategoriaColor(categoria: string): string {
   const map: Record<string, string> = {
-    economia: '#2ECC71',
-    eficiencia: '#3498DB',
-    sustentabilidade: '#27AE60',
-    consistencia: '#F39C12',
-    metas: '#1E90FF',
+    economia: '#2E7D32',
+    eficiencia: '#2B6777',
+    sustentabilidade: '#3FA34D',
+    consistencia: '#D4A017',
+    metas: '#7CB342',
   };
   return map[categoria] || '#94A3B8';
 }

@@ -11,8 +11,16 @@ import ImpactCard from '../src/ecoImpact/components/ImpactCard';
 import AchievementCard from '../src/ecoImpact/components/AchievementCard';
 import Loading from '../src/components/Loading';
 
+const IMPACT_ICONS: Record<string, { icon: string; bg: string }> = {
+  'CO₂ Evitado': { icon: 'leaf-outline', bg: '#2B6777' },
+  'Árvores Equivalentes': { icon: 'leaf', bg: '#3FA34D' },
+  'Energia Economizada': { icon: 'flash', bg: '#7CB342' },
+  'Impacto Financeiro': { icon: 'cash', bg: '#2E7D32' },
+};
+
 export default function ImpactScreen() {
-  const { colors } = useTheme();
+  const { colors, themeName } = useTheme();
+  const isPremium = themeName === 'ecoNaturePremium';
   const {
     achievements,
     efficiency,
@@ -53,7 +61,7 @@ export default function ImpactScreen() {
         />
       }
     >
-      <View style={[styles.summaryRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.summaryRow, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: isPremium ? 24 : borderRadius.card }]}>
         <View style={styles.summaryItem}>
           <Text style={[styles.summaryValue, { color: colors.green.primary }]}>
             {unlockedCount}/{totalCount}
@@ -135,7 +143,7 @@ export default function ImpactScreen() {
         ))}
       </View>
 
-      <View style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: isPremium ? 24 : borderRadius.card }]}>
         <Text style={[styles.sectionTitle, { color: colors.text.primary, marginBottom: spacing.md }]}>
           Estatísticas
         </Text>

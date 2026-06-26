@@ -1,7 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, Image } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
 type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -11,11 +9,11 @@ type EcoPowerLogoProps = {
   showTagline?: boolean;
 };
 
-const sizes: Record<LogoSize, { icon: number; title: number; tagline: number; glow: number }> = {
-  sm: { icon: 24, title: 20, tagline: 10, glow: 52 },
-  md: { icon: 32, title: 26, tagline: 12, glow: 68 },
-  lg: { icon: 40, title: 32, tagline: 13, glow: 84 },
-  xl: { icon: 52, title: 40, tagline: 14, glow: 108 },
+const sizes: Record<LogoSize, { image: number; title: number; tagline: number }> = {
+  sm: { image: 80, title: 18, tagline: 9 },
+  md: { image: 100, title: 22, tagline: 11 },
+  lg: { image: 130, title: 28, tagline: 12 },
+  xl: { image: 160, title: 34, tagline: 13 },
 };
 
 export default function EcoPowerLogo({
@@ -27,53 +25,22 @@ export default function EcoPowerLogo({
 
   return (
     <View style={{ alignItems: 'center' }}>
-      <View style={{
-        width: s.glow,
-        height: s.glow,
-        borderRadius: s.glow / 2,
-        backgroundColor: 'rgba(46,204,113,0.12)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
-      }}>
-        <LinearGradient
-          colors={['#2ECC71', '#3498DB']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            width: s.icon + 16,
-            height: s.icon + 16,
-            borderRadius: (s.icon + 16) / 2,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <MaterialCommunityIcons
-            name="lightning-bolt"
-            size={s.icon}
-            color="#FFFFFF"
-          />
-        </LinearGradient>
-      </View>
-      <LinearGradient
-        colors={['#2ECC71', '#3498DB']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{ borderRadius: 4 }}
+      <Image
+        source={require('../../assets/icon.png')}
+        style={{ width: s.image, height: s.image, marginBottom: 8 }}
+        resizeMode="contain"
+      />
+      <Text
+        style={{
+          fontFamily: 'Poppins',
+          fontSize: s.title,
+          fontWeight: '700',
+          color: colors.text.primary,
+          letterSpacing: 0.5,
+        }}
       >
-        <Text
-          style={{
-            fontFamily: 'Poppins',
-            fontSize: s.title,
-            fontWeight: '700',
-            color: '#FFFFFF',
-            letterSpacing: 0.5,
-            paddingHorizontal: 4,
-          }}
-        >
-          EcoPower
-        </Text>
-      </LinearGradient>
+        EcoPower
+      </Text>
       {showTagline && (
         <Text
           style={{

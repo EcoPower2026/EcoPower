@@ -123,54 +123,54 @@ export const ecoNatureColors = {
   },
 };
 
-export const auroraEnergyColors = {
-  background: '#0B1020',
-  surface: '#121A2F',
-  surfaceLight: '#19233C',
-  surfaceElevated: '#19233C',
-  card: '#19233C',
-  cardHover: '#1E2A45',
-  border: 'rgba(255,255,255,0.08)',
+export const ecoNaturePremiumColors = {
+  background: '#0A1A12',
+  surface: '#0F2418',
+  surfaceLight: '#153021',
+  surfaceElevated: '#1A3D28',
+  card: '#0F2418',
+  cardHover: '#153021',
+  border: 'rgba(255,255,255,0.06)',
   divider: 'rgba(255,255,255,0.08)',
   green: {
-    primary: '#00E676',
-    dark: '#00C853',
-    light: '#69F0AE',
+    primary: '#22C55E',
+    dark: '#16A34A',
+    light: '#4ADE80',
   },
   blue: {
-    primary: '#00D4FF',
-    medium: '#5EEBFF',
-    dark: '#0097A7',
-    chart: '#00D4FF',
+    primary: '#0EA5E9',
+    medium: '#38BDF8',
+    dark: '#0284C7',
+    chart: '#4ADE80',
   },
   text: {
     primary: '#FFFFFF',
-    secondary: '#C8D0E7',
-    tertiary: '#8892A6',
-    muted: '#8892A6',
+    secondary: '#D4EDDA',
+    tertiary: '#A3D9B1',
+    muted: '#6BC47E',
     dark: '#FFFFFF',
-    darkSecondary: '#C8D0E7',
-    darkMuted: '#8892A6',
+    darkSecondary: '#D4EDDA',
+    darkMuted: '#A3D9B1',
   },
   alert: {
-    warning: '#FFB300',
-    danger: '#FF5252',
-    info: '#00D4FF',
-    success: '#00E676',
+    warning: '#EAB308',
+    danger: '#EF4444',
+    info: '#22C55E',
+    success: '#22C55E',
   },
   gradients: {
-    primary: ['#7C4DFF', '#00D4FF'] as const,
-    greenBlue: ['#9C6BFF', '#5EEBFF'] as const,
+    primary: ['#0A1A12', '#0F2418', '#153021'] as const,
+    greenBlue: ['#22C55E', '#0EA5E9'] as const,
   },
 };
 
-export type ThemeName = 'ecoPowerDark' | 'ecoPowerLight' | 'ecoNature' | 'auroraEnergy';
+export type ThemeName = 'ecoPowerDark' | 'ecoPowerLight' | 'ecoNature' | 'ecoNaturePremium';
 
 export const THEMES: Record<ThemeName, { name: string; colors: { [key: string]: any }; isDark: boolean; label: string }> = {
   ecoPowerDark: { name: 'ecoPowerDark', colors: darkColors, isDark: true, label: 'EcoPower Dark' },
   ecoPowerLight: { name: 'ecoPowerLight', colors: lightColors, isDark: false, label: 'EcoPower Light' },
   ecoNature: { name: 'ecoNature', colors: ecoNatureColors, isDark: false, label: 'Eco Nature' },
-  auroraEnergy: { name: 'auroraEnergy', colors: auroraEnergyColors, isDark: true, label: 'Aurora Energy' },
+  ecoNaturePremium: { name: 'ecoNaturePremium', colors: ecoNaturePremiumColors, isDark: true, label: 'Eco Nature Premium' },
 };
 
 export const colors = darkColors;
@@ -298,9 +298,9 @@ export function getChartConfig(themeName?: ThemeName) {
       bgFrom: '#EAF6EA', bgTo: '#F4FAF4', lineColor: '#43A047', fillGradient: '#81C784',
       strokeColor: '#EAF6EA', bgLineStroke: 'rgba(0,0,0,0.04)',
     },
-    auroraEnergy: {
-      bgFrom: '#121A2F', bgTo: '#19233C', lineColor: '#00D4FF', fillGradient: '#00D4FF',
-      strokeColor: '#121A2F', bgLineStroke: 'rgba(255,255,255,0.06)',
+    ecoNaturePremium: {
+      bgFrom: '#0F2418', bgTo: '#153021', lineColor: '#22C55E', fillGradient: '#22C55E',
+      strokeColor: '#0F2418', bgLineStroke: 'rgba(255,255,255,0.06)',
     },
   };
 

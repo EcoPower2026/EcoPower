@@ -50,11 +50,12 @@ const configItems: SectionItem[] = [
 const ICON_SIZE = 22;
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const { colors } = useTheme();
+  const { colors, themeName } = useTheme();
   const { isDemoMode, disableDemoMode } = useDemo();
   const insets = useSafeAreaInsets();
   const [unreadAlerts, setUnreadAlerts] = useState(0);
   const [activeRoute, setActiveRoute] = useState('Home');
+  const isPremium = themeName === 'ecoNaturePremium';
 
   const isActive = (screen: string) => activeRoute === screen;
 
@@ -111,7 +112,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           borderRadius: 12,
           marginHorizontal: spacing.sm,
           marginVertical: 2,
-          backgroundColor: active ? 'rgba(46,204,113,0.15)' : 'transparent',
+          backgroundColor: active ? (isPremium ? 'rgba(34,197,94,0.15)' : 'rgba(46,204,113,0.15)') : 'transparent',
           borderLeftWidth: active ? 4 : 0,
           borderLeftColor: active ? colors.green.primary : 'transparent',
           paddingLeft: active ? spacing.md - 4 : spacing.md,
@@ -183,7 +184,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: isPremium ? '#0A1A12' : colors.background, paddingTop: insets.top }}>
       <View
         style={{
           paddingHorizontal: spacing.lg,

@@ -19,23 +19,23 @@ const DEMO_USER = {
 const DEMO_APPLIANCES: (Appliance & { potencia: number; horasPorDia: number; ativo: boolean })[] = [
   { id: 'demo-app-1', nome: 'Geladeira', descricao: 'Geladeira Frost Free 340L', dataCadastro: '2024-01-15T10:00:00Z', potencia: 150, horasPorDia: 24, ativo: true },
   { id: 'demo-app-2', nome: 'TV Smart', descricao: 'TV LED 55" 4K', dataCadastro: '2024-02-10T14:00:00Z', potencia: 120, horasPorDia: 6, ativo: true },
-  { id: 'demo-app-3', nome: 'Ar Condicionado', descricao: 'Ar Condicionado Split 12000 BTUs', dataCadastro: '2024-03-05T09:00:00Z', potencia: 1500, horasPorDia: 8, ativo: true },
+  { id: 'demo-app-3', nome: 'Ar Condicionado', descricao: 'Ar Condicionado Split 12000 BTUs', dataCadastro: '2024-03-05T09:00:00Z', potencia: 1500, horasPorDia: 6, ativo: true },
   { id: 'demo-app-4', nome: 'Microondas', descricao: 'Microondas 30L', dataCadastro: '2024-01-20T11:00:00Z', potencia: 1200, horasPorDia: 0.5, ativo: false },
   { id: 'demo-app-5', nome: 'Chuveiro Elétrico', descricao: 'Chuveiro Elétrico 5500W', dataCadastro: '2024-04-12T16:00:00Z', potencia: 5500, horasPorDia: 1, ativo: true },
   { id: 'demo-app-6', nome: 'Computador Gamer', descricao: 'PC Gamer RTX 4070', dataCadastro: '2024-05-01T18:00:00Z', potencia: 500, horasPorDia: 6, ativo: false },
-  { id: 'demo-app-7', nome: 'Máquina de Lavar', descricao: 'Lava e Seca 12kg', dataCadastro: '2024-02-25T08:00:00Z', potencia: 1000, horasPorDia: 1, ativo: false },
+  { id: 'demo-app-7', nome: 'Máquina de Lavar', descricao: 'Lava e Seca 12kg', dataCadastro: '2024-02-25T08:00:00Z', potencia: 1000, horasPorDia: 1, ativo: true },
 ];
 
 const DEMO_GOALS: Goal[] = [
-  { id: 'demo-goal-1', titulo: 'Reduzir 15% do consumo mensal', valorAlvo: 200, dataInicio: '2024-06-01', dataFim: '2024-12-31', progresso: 65, aparelhoId: '', ativa: true },
-  { id: 'demo-goal-2', titulo: 'Economizar R$ 50 por mês', valorAlvo: 50, dataInicio: '2024-06-01', dataFim: '2024-12-31', progresso: 40, aparelhoId: 'demo-app-3', ativa: true },
+  { id: 'demo-goal-1', titulo: 'Reduzir 15% do consumo mensal', valorAlvo: 350, dataInicio: '2024-06-01', dataFim: '2024-12-31', progresso: 65, aparelhoId: '', ativa: true },
+  { id: 'demo-goal-2', titulo: 'Manter gasto abaixo de R$ 360', valorAlvo: 360, dataInicio: '2024-06-01', dataFim: '2024-12-31', progresso: 200, aparelhoId: 'demo-app-3', ativa: true },
   { id: 'demo-goal-3', titulo: 'Meta de eficiência energética', valorAlvo: 300, dataInicio: '2024-07-01', dataFim: '2025-06-30', progresso: 25, aparelhoId: '', ativa: false },
 ];
 
 const DEMO_ALERTS: Alert[] = [
   { id: 'demo-alert-1', tipo: 'consumo_alto', titulo: 'Consumo acima da média', mensagem: 'Seu consumo este mês está 25% acima da média dos últimos 3 meses. Considere revisar seus hábitos de uso.', nivel: 'warning', lido: false, createdAt: { toDate: () => new Date(Date.now() - 3600000) } },
   { id: 'demo-alert-2', tipo: 'meta_proxima', titulo: 'Meta quase atingida', mensagem: 'Você está a 10% de atingir a meta "Reduzir 15% do consumo mensal". Continue assim!', nivel: 'info', lido: false, createdAt: { toDate: () => new Date(Date.now() - 86400000) } },
-  { id: 'demo-alert-3', tipo: 'aparelho_dominante', titulo: 'Alto consumo do Chuveiro', mensagem: 'O Chuveiro Elétrico representa 43% do seu consumo total. Reduzir 5 minutos por dia pode gerar grande economia.', nivel: 'danger', lido: true, createdAt: { toDate: () => new Date(Date.now() - 172800000) } },
+  { id: 'demo-alert-3', tipo: 'aparelho_dominante', titulo: 'Alto consumo do Ar Condicionado', mensagem: 'O Ar Condicionado representa 63% do seu consumo total. Aumentar a temperatura em 2°C pode gerar grande economia.', nivel: 'danger', lido: true, createdAt: { toDate: () => new Date(Date.now() - 172800000) } },
   { id: 'demo-alert-4', tipo: 'economia', titulo: 'Economia detectada', mensagem: 'Seu consumo reduziu 8% comparado ao mês passado. Parabéns pela economia!', nivel: 'info', lido: true, createdAt: { toDate: () => new Date(Date.now() - 259200000) } },
 ];
 
@@ -59,7 +59,7 @@ function generateDemoReadings(): DemoReading[] {
         const currentPower = app.potencia * variacao;
         const voltage = 127;
         const current = currentPower / voltage;
-        const kwh = (currentPower * (24 / leiturasPorDia)) / 1000;
+        const kwh = (currentPower * (app.horasPorDia / leiturasPorDia)) / 1000;
         const cost = kwh * APPLIANCE_TARIFF;
 
         const timestamp = new Date(now - (day * 86400000) - ((leiturasPorDia - leitura) * (86400000 / leiturasPorDia))).toISOString();
@@ -106,17 +106,17 @@ function getConsumptionByAppliance(): { name: string; consumption: number; perce
 const DEMO_INSIGHTS: Insight[] = [
   {
     tipo: 'reducao_uso',
-    titulo: 'Reduza o uso do Chuveiro Elétrico',
-    descricao: 'Reduzindo 5 minutos por dia no banho você economizaria aproximadamente R$ 24,50 por mês.',
-    economiaPotencial: 24.50,
+    titulo: 'Otimize o Ar Condicionado',
+    descricao: 'Aumentar a temperatura em 2°C pode reduzir o consumo do ar condicionado em até 15%.',
+    economiaPotencial: 38.50,
     prioridade: 'alta',
   },
   {
     tipo: 'reducao_uso',
-    titulo: 'Otimize o Ar Condicionado',
-    descricao: 'Aumentar a temperatura em 2°C pode reduzir o consumo do ar condicionado em até 15%.',
-    economiaPotencial: 18.30,
-    prioridade: 'alta',
+    titulo: 'Otimize o uso da Máquina de Lavar',
+    descricao: 'Utilizar a máquina com carga máxima reduz o número de ciclos e economiza energia.',
+    economiaPotencial: 7.10,
+    prioridade: 'media',
   },
   {
     tipo: 'standby',
@@ -137,9 +137,9 @@ const DEMO_INSIGHTS: Insight[] = [
 const DEMO_RANKING = getConsumptionByAppliance();
 
 const DEMO_EFFICIENCY_SCORE: EfficiencyScore = {
-  score: 72,
+  score: 75,
   classificacao: 'Bom',
-  economiaPotencial: 45.80,
+  economiaPotencial: 84.73,
 };
 
 const MONTHLY_TOTAL_KWH = DEMO_READINGS
