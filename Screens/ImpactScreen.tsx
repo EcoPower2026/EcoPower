@@ -21,6 +21,7 @@ const IMPACT_ICONS: Record<string, { icon: string; bg: string }> = {
 export default function ImpactScreen() {
   const { colors, themeName } = useTheme();
   const isPremium = themeName === 'ecoNaturePremium';
+
   const {
     achievements,
     efficiency,

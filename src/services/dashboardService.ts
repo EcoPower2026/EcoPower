@@ -80,7 +80,8 @@ function generateInsightOfTheDay(
   topConsumers: TopConsumer[],
   efficiencyScore: { score: number; classificacao: string } | null,
   goals: Goal[],
-  comparison?: { monthConsumptionChange: number } | null
+  comparison?: { monthConsumptionChange: number } | null,
+  tariff: number = 0.95
 ): { message: string; icon: string } {
   const insights: { message: string; icon: string }[] = [];
 
@@ -92,7 +93,7 @@ function generateInsightOfTheDay(
         icon: 'lightbulb-on',
       });
       insights.push({
-        message: `Reduzir 1 hora diária de ${top.name} pode economizar até R$ ${(top.consumption / 30 * 0.95 * 0.5).toFixed(2)} por mês.`,
+        message: `Reduzir 1 hora diária de ${top.name} pode economizar até R$ ${(top.consumption / 30 * tariff * 0.5).toFixed(2)} por mês.`,
         icon: 'lightbulb-on',
       });
     }
@@ -146,7 +147,7 @@ function generateInsightOfTheDay(
     const expensive = topConsumers.find(t => t.consumption > avgKwhPerAppliance * 1.5);
     if (expensive) {
       insights.push({
-        message: `${expensive.name} custa aproximadamente R$ ${(expensive.consumption * 0.95).toFixed(2)} este mês — bem acima da média dos demais aparelhos.`,
+        message: `${expensive.name} custa aproximadamente R$ ${(expensive.consumption * tariff).toFixed(2)} este mês — bem acima da média dos demais aparelhos.`,
         icon: 'currency-usd',
       });
     }
@@ -287,7 +288,7 @@ export async function generateDashboardData(params: {
     };
   }
 
-  const insightOfTheDay = generateInsightOfTheDay(monthReadings, topConsumers, efficiencyScore, goals, comparison);
+  const insightOfTheDay = generateInsightOfTheDay(monthReadings, topConsumers, efficiencyScore, goals, comparison, tariff);
   const proactiveAlert = generateProactiveAlert(forecast, goal, topConsumers);
   const chartData = buildChartData(readings);
   const recentAlerts = alerts.slice(0, 3).map(a => ({
@@ -355,7 +356,7 @@ export function generateDemoDashboardData(): DashboardData {
     percentAboveGoal,
   };
 
-  const insightOfTheDay = generateInsightOfTheDay(monthReadings, topConsumers, efficiency, goals, null);
+  const insightOfTheDay = generateInsightOfTheDay(monthReadings, topConsumers, efficiency, goals, null, tariff);
   const proactiveAlert = generateProactiveAlert(forecast, goal, topConsumers);
   const chartData = buildChartData(readings);
   const recentAlerts = alerts.slice(0, 3).map((a: Alert) => ({

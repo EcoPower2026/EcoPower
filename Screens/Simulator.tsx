@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
   Text,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
 import { useDemo } from '../src/contexts/DemoContext';
+import * as dataProvider from '../src/services/dataProvider';
 import { demoData } from '../src/data/demoData';
+import { Appliance } from '../src/types';
 import Button from '../src/components/Button';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { RootStackParamList } from '../src/types/navigation';
@@ -58,7 +63,7 @@ const createLabelStyle = (colors: any) => ({
 export default function Simulator({ navigation }: SimulatorProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
-
+  const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [inputs, setInputs] = useState<SimulatorInputs>({
     power: '', hoursPerDay: '', daysPerMonth: '30', tariff: '0.95', reduction: '10',
   });
@@ -70,6 +75,22 @@ export default function Simulator({ navigation }: SimulatorProps) {
   const [comp, setComp] = useState<ComparatorInputs>({ powerA: '', hoursA: '', powerB: '', hoursB: '' });
   const [compResult, setCompResult] = useState<{ consA: number; consB: number; diff: number; annualEconomy: number } | null>(null);
 
+  useEffect(() => {
+    let unsubApps: (() => void) | null = null;
+    const unsubAuth = onAuthStateChanged(auth, user => {
+      if (user || isDemoMode) {
+        unsubApps = dataProvider.subscribeAppliances(
+          isDemoMode ? 'demo-user' : (user?.uid || ''),
+          list => {
+            setAppliances(list);
+          },
+          isDemoMode
+        );
+      }
+    });
+    return () => { unsubAuth(); unsubApps?.(); };
+  }, [isDemoMode]);
+
   const handleCalculate = () => {
     const power = Number(inputs.power);
     const hours = Number(inputs.hoursPerDay);
@@ -77,6 +98,10 @@ export default function Simulator({ navigation }: SimulatorProps) {
     const tariff = Number(inputs.tariff) || 0.95;
     const reduction = Number(inputs.reduction) || 0;
     if (!power || !hours) return;
+    if (hours > 24) {
+      Alert.alert('Horas inválidas', 'O máximo permitido é 24 horas por dia.');
+      return;
+    }
     const dailyConsumption = (power * hours) / 1000;
     const monthlyConsumption = dailyConsumption * days;
     const monthlyCost = monthlyConsumption * tariff;
@@ -90,6 +115,10 @@ export default function Simulator({ navigation }: SimulatorProps) {
     const pA = Number(comp.powerA); const hA = Number(comp.hoursA);
     const pB = Number(comp.powerB); const hB = Number(comp.hoursB);
     if (!pA || !hA || !pB || !hB) return;
+    if (hA > 24 || hB > 24) {
+      Alert.alert('Horas inválidas', 'O máximo permitido é 24 horas por dia.');
+      return;
+    }
     const consA = (pA * hA) / 1000; const consB = (pB * hB) / 1000;
     const diff = Math.abs(consA - consB);
     const tariff = Number(inputs.tariff) || 0.95;
@@ -104,8 +133,16 @@ export default function Simulator({ navigation }: SimulatorProps) {
     }
   };
 
+  const fillUserAppliance = (app: Appliance) => {
+    setInputs(prev => ({ ...prev, power: String(app.potencia || 0), hoursPerDay: String(app.horasPorDia || 1) }));
+  };
+
   const demoPresets = isDemoMode
     ? [{ label: 'Simular Chuveiro', name: 'Chuveiro Elétrico' }, { label: 'Simular Ar', name: 'Ar Condicionado' }, { label: 'Simular Geladeira', name: 'Geladeira' }]
+    : [];
+
+  const userPresets = !isDemoMode && appliances.length > 0
+    ? appliances
     : [];
 
   return (
@@ -133,6 +170,26 @@ export default function Simulator({ navigation }: SimulatorProps) {
               <TouchableOpacity key={p.name} onPress={() => fillDemoAppliance(p.name)}
                 style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.green.primary }}>
                 <Text style={{ color: '#FFFFFF', fontFamily: 'Poppins', fontWeight: '600', fontSize: 13 }}>{p.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {userPresets.length > 0 && (
+        <View style={{
+          backgroundColor: colors.card, borderRadius: borderRadius.card,
+          padding: spacing.md, marginBottom: spacing.md, ...shadows.card,
+        }}>
+          <Text style={{
+            fontFamily: 'Poppins', fontSize: 13, fontWeight: '600', color: colors.text.darkMuted,
+            marginBottom: spacing.sm, letterSpacing: 0.5, textTransform: 'uppercase',
+          }}>Seus Aparelhos</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {userPresets.map(app => (
+              <TouchableOpacity key={app.id} onPress={() => fillUserAppliance(app)}
+                style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.green.primary }}>
+                <Text style={{ color: '#FFFFFF', fontFamily: 'Poppins', fontWeight: '600', fontSize: 13 }}>{app.nome}</Text>
               </TouchableOpacity>
             ))}
           </View>

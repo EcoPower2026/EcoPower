@@ -45,7 +45,7 @@ export async function createUserProfile(
 ): Promise<void> {
   await setDoc(usuarioRef(userId), {
     ...data,
-    tarifaKwh: 0,
+    tarifaKwh: 0.95,
     dataCadastro: serverTimestamp(),
   });
 }

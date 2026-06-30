@@ -43,6 +43,7 @@ export default function GoalForm({ navigation, route }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, user => {
       const uid = isDemoMode ? 'demo-user' : (user?.uid || '');
@@ -51,8 +52,8 @@ export default function GoalForm({ navigation, route }: Props) {
         const unsubApps = dataProvider.subscribeAppliances(uid, list => {
           setAppliances(list);
         }, isDemoMode);
-        if (isEditing) {
-          const unsubGoals = dataProvider.subscribeGoals(uid, list => {
+        const unsubGoals = dataProvider.subscribeGoals(uid, list => {
+          if (isEditing) {
             const found = list.find(g => g.id === goalId);
             if (found) {
               setTitulo(found.titulo);
@@ -63,10 +64,11 @@ export default function GoalForm({ navigation, route }: Props) {
             }
             setLoading(false);
             unsubGoals();
-          }, isDemoMode);
-        } else {
-          setLoading(false);
-        }
+          } else {
+            setLoading(false);
+            unsubGoals();
+          }
+        }, isDemoMode);
       } else {
         setLoading(false);
       }

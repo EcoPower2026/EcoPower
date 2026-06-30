@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoPower — Monitoramento Inteligente de Energia</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* -------------------------------------------------------------------------- */
+        /* 1. DESIGN SYSTEM & VARIABLES                                               */
+        /* -------------------------------------------------------------------------- */
+        :root {
+            --bg-principal: #0A0F0A;
+            --bg-cards: #121812;
+            --primary: #00E676;
+            --secondary: #00BFA5;
+            --gradient-hero: linear-gradient(135deg, #0A0F0A 0%, #003D33 100%);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0BEC5;
+            --text-tertiary: #78909C;
+            --accent: #76FF03;
+            --font-title: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-tech: 'JetBrains Mono', monospace;
+            --transition: all 0.3s ease;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 2. BASE RESET & ESTRUTURA                                                  */
+        /* -------------------------------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-title);
+            letter-spacing: 1px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* SPA Behavior Grid & Sections */
+        .spa-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            padding: 120px 5% 80px 5%;
+            min-height: calc(100vh - 80px);
+        }
+
+        .spa-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            font-size: 1.1rem;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 3. COMPONENTES: COMPARTILHADOS (BOTÕES, CARDS)                             */
+        /* -------------------------------------------------------------------------- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-body);
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(118, 255, 3, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--secondary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 191, 165, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background-color: var(--bg-cards);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 230, 118, 0.1);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 4. HEADER & NAV                                                            */
+        /* -------------------------------------------------------------------------- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10, 15, 10, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            background: rgba(5, 8, 5, 0.98);
+            padding: 10px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .nav-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 5%;
+        }
+
+        .logo {
+            font-family: var(--font-title);
+            font-size: 1.6rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+
+        .logo-img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-link:hover, .nav-link.active-link {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover::after, .nav-link.active-link::after {
+            width: 100%;
+        }
+
+        .btn-header {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            color: #000;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 5. SEÇÃO: HOME (HERO)                                                      */
+        /* -------------------------------------------------------------------------- */
+        #home {
+            padding-top: 0;
+            padding-bottom: 60px;
+        }
+
+        .hero-wrapper {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(rgba(10, 15, 10, 0.6), rgba(10, 15, 10, 0.9)), url('https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+            border-radius: 0 0 40px 40px;
+            padding: 0 5%;
+            margin-bottom: 60px;
+            box-shadow: inset 0 -30px 100px var(--bg-principal);
+        }
+
+        .hero-content {
+            max-width: 700px;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Grid de diferenciais */
+        .features-highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .highlight-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .highlight-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .highlight-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 6. SEÇÃO: SOBRE O APP                                                      */
+        /* -------------------------------------------------------------------------- */
+        .about-split {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .about-mockup-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mockup-img {
+            border-radius: 16px;
+            border: 2px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 50px rgba(0, 230, 118, 0.15);
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .badge-tcc {
+            position: absolute;
+            top: 20px;
+            right: 15%;
+            background-color: var(--accent);
+            color: #000;
+            font-family: var(--font-tech);
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 15px rgba(118, 255, 3, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .about-text h3 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .about-text p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.02);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-number {
+            font-family: var(--font-tech);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 7. SEÇÃO: FUNCIONALIDADES                                                  */
+        /* -------------------------------------------------------------------------- */
+        .func-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .func-card {
+            text-align: left;
+        }
+
+        .func-card i {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .func-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .func-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Estilização Adicional: Seção de Planos                                     */
+        /* -------------------------------------------------------------------------- */
+        .pricing-section {
+            padding: 60px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .pricing-header h2 {
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .pricing-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            align-items: stretch;
+        }
+
+        .pricing-card {
+            background: var(--card-bg, #f4f9f6);
+            border: 1px solid var(--border-color, #d8e8e0);
+            border-radius: 16px;
+            padding: 35px 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #1b4332;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid var(--primary-color, #2d6a4f);
+            box-shadow: 0 10px 25px rgba(45, 106, 79, 0.15);
+            background: var(--card-featured-bg, #edf5f1);
+        }
+
+        .badge-featured {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color, #2d6a4f);
+            color: #fff;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-header {
+            text-align: center;
+            border-bottom: 1px solid var(--border-color, #d8e8e0);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header h3 {
+            font-family: var(--font-body);
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            color: #1b4332;
+            font-weight: 700;
+        }
+
+        .plan-description {
+            font-size: 0.9rem;
+            color: #555;
+            margin: 0 0 15px 0;
+            min-height: 40px;
+        }
+
+        .price {
+            font-size: 2.4rem;
+            font-weight: bold;
+            color: #1b4332;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: #555;
+            font-weight: normal;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 35px 0;
+            flex-grow: 1;
+        }
+
+        .features-list li {
+            margin-bottom: 14px;
+            font-size: 0.95rem;
+            color: #2b2b2b;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li.disabled {
+            color: #a0b0a8;
+            text-decoration: line-through;
+        }
+
+        .icon-check {
+            color: #2d6a4f;
+            margin-right: 12px;
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        .icon-close {
+            color: #e63946;
+            margin-right: 12px;
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        .btn-plan {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background 0.2s ease;
+        }
+
+        .btn-plan.btn-primary {
+            background: #2d6a4f;
+            color: white;
+        }
+
+        .btn-plan.btn-primary:hover {
+            background: #1b4332;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 8. SEÇÃO: TECNOLOGIA / COMO FUNCIONA                                       */
+        /* -------------------------------------------------------------------------- */
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            position: relative;
+            margin-bottom: 80px;
+        }
+
+        .step-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background-color: var(--bg-cards);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px auto;
+            font-size: 1.8rem;
+            color: var(--primary);
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-num {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent);
+            color: #000;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-family: var(--font-tech);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-item h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .step-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* FAQ Accordion */
+        .faq-wrapper {
+            max-width: 800px;
+            margin: 0 auto 80px auto;
+        }
+
+        .faq-item {
+            background-color: var(--bg-cards);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .faq-trigger {
+            width: 100%;
+            padding: 20px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .faq-trigger i {
+            color: var(--secondary);
+            transition: var(--transition);
+        }
+
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 20px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .faq-item.open .faq-content {
+            padding-bottom: 20px;
+        }
+
+        .faq-item.open .faq-trigger i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        /* QR Code Block */
+        .qr-block {
+            background: radial-gradient(circle at top right, rgba(0, 230, 118, 0.1), transparent), var(--bg-cards);
+            padding: 40px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .qr-text h3 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .qr-text p {
+            color: var(--text-secondary);
+        }
+
+        .qr-code-img {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            width: 150px;
+            height: 150px;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 9. SEÇÃO: BAIXAR (CTA)                                                     */
+        /* -------------------------------------------------------------------------- */
+        .download-wrapper {
+            background: var(--gradient-hero);
+            border-radius: 24px;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .download-wrapper h2 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+
+        .download-wrapper p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-download {
+            background-color: #000;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-family: var(--font-body);
+        }
+
+        .btn-download:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 230, 118, 0.2);
+        }
+
+        .badges-tech-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tech-badge {
+            font-family: var(--font-tech);
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 14px;
+            border-radius: 4px;
+            color: var(--text-tertiary);
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 10. SEÇÃO: CONTATO & FOOTER                                                */
+        /* -------------------------------------------------------------------------- */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .contact-card {
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .contact-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .contact-card h4 {
+            font-family: var(--font-title);
+            margin-bottom: 8px;
+        }
+
+        .contact-card p {
+            color: var(--text-secondary);
+            font-family: var(--font-tech);
+            font-size: 0.9rem;
+        }
+
+        /* Simulação de Mapa */
+        .map-mockup {
+            height: 300px;
+            border-radius: 16px;
+            background: linear-gradient(rgba(10, 15, 10, 0.7), rgba(10, 15, 10, 0.7)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 80px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .map-pin {
+            font-size: 3rem;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 40px 5% 20px 5%;
+            background-color: #050805;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-socials a {
+            width: 40px;
+            height: 40px;
+            background-color: var(--bg-cards);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-socials a:hover {
+            color: #000;
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-credits {
+            width: 100%;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.02);
+            padding-top: 20px;
+        }
+
+        /* Modal para Modo Demonstração */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-cards);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-box i.modal-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .modal-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-box p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-box .btn-close {
+            background: transparent;
+            border: 1px solid var(--text-tertiary);
+            color: var(--text-secondary);
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .modal-box .btn-close:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .modal-box .qr-code-img {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 20px auto;
+        }
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            z-index: 999;
+            animation: pulse-green 2s infinite;
+        }
+
+        /* Tooltip de Cópia */
+        .tooltip {
+            position: absolute;
+            background: var(--primary);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 11. ANIMAÇÕES (KEYFRAMES)                                                  */
+        /* -------------------------------------------------------------------------- */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* 12. RESPONSIVIDADE (BREAKPOINTS)                                           */
+        /* -------------------------------------------------------------------------- */
+        @media (max-width: 1024px) {
+            .func-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hero-content h1 {
+                font-size: 3.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: var(--bg-principal);
+                flex-direction: column;
+                align-items: center;
+                padding-top: 50px;
+                transition: var(--transition);
+                z-index: 999;
+            }
+
+            .nav-menu.mobile-open {
+                left: 0;
+            }
+
+            .btn-header {
+                display: none;
+            }
+
+            .hero-wrapper {
+                min-height: auto;
+                padding: 120px 5% 60px 5%;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .features-highlight-grid, .about-split, .func-grid, .steps-container, .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .qr-block {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .download-wrapper h2 {
+                font-size: 2rem;
+            }
+
+            .download-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-download, .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="nav-container">
+            <a href="#home" class="logo" onclick="navigateTo('home')">
+                <img src="assets/icon.png" alt="EcoPower" class="logo-img"> EcoPower
+            </a>
+            <div class="menu-toggle" id="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#home" class="nav-link active-link" onclick="navigateTo('home')">Home</a></li>
+                <li><a href="#sobre" class="nav-link" onclick="navigateTo('sobre')">Sobre</a></li>
+                <li><a href="#funcionalidades" class="nav-link" onclick="navigateTo('funcionalidades')">Funcionalidades</a></li>
+                <li><a href="#tecnologia" class="nav-link" onclick="navigateTo('tecnologia')">Tecnologia</a></li>
+                <li><a href="#baixar" class="nav-link" onclick="navigateTo('baixar')">Baixar</a></li>
+                <li><a href="#contato" class="nav-link" onclick="navigateTo('contato')">Contato</a></li>
+            </ul>
+            <a href="#baixar" class="btn btn-header" onclick="navigateTo('baixar')">Acessar App</a>
+        </div>
+    </header>
+
+    <main id="home" class="spa-section active">
+        <section class="hero-wrapper">
+            <div class="hero-content">
+                <h1>Monitore.<br>Analise.<br><span style="color: var(--primary);">Economize.</span></h1>
+                <p>Acompanhe o consumo de energia elétrica dos seus aparelhos em tempo real com o ecossistema EcoPower de forma inteligente.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="navigateTo('baixar')">Comece Agora <i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="btn btn-outline" onclick="navigateTo('sobre')">Saiba Mais</button>
+                </div>
+            </div>
+        </section>
+        
+        <div class="container">
+            <div class="features-highlight-grid">
+                <div class="card highlight-card">
+                    <i class="fa-solid fa-microchip"></i>
+                    <h3>1 ESP32, Todos os Aparelhos</h3>
+                    <p>Um único hardware portátil e reutilizável pronto para mapear e auditar individualmente o consumo de cada equipamento do seu lar.</p>
+                </div>
+                <div class="card highlight-card">
+                    <i class="fa-solid fa-bluetooth"></i>
+                    <h3>Tempo Real via Bluetooth</h3>
+                    <p>Transmissão direta e local para o seu smartphone. Monitore dados instantâneos sem depender de conexões instáveis com a internet.</p>
+                </div>
+                <div class="card highlight-card">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h3>Economia Inteligente</h3>
+                    <p>Defina metas em Reais (R$), receba alertas em horários de pico e evite sustos na conta com a projeção automatizada.</p>
+                </div>
+            </div>
+
+            <section class="pricing-section">
+                <div class="pricing-header">
+                    <h2>Escolha o plano ideal para a sua economia</h2>
+                    <p>Tenha o controle total da sua energia e reduza sua pegada de carbono.</p>
+                </div>
+                <div class="pricing-container">
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Eco Free</h3>
+                            <p class="plan-description">O essencial para começar a monitorar.</p>
+                            <div class="price">R$ 0<span>/mês</span></div>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="icon-check">✓</i> Dashboard básico (Dia/Mês)</li>
+                            <li><i class="icon-check">✓</i> Cadastro de até 5 aparelhos</li>
+                            <li><i class="icon-check">✓</i> 1 Meta de economia activa</li>
+                            <li><i class="icon-check">✓</i> Histórico limitado (30 dias)</li>
+
+                            <li class="disabled"><i class="icon-close">✕</i> Relatórios em PDF</li>
+                            <li class="disabled"><i class="icon-close">✕</i> Insights com IA & Forecast</li>
+                            <li class="disabled"><i class="icon-close">✕</i> Gamificação & Eco Impacto</li>
+                        </ul>
+                        <button class="btn-plan btn-primary">Plano Atual</button>
+                    </div>
+                    <div class="pricing-card featured">
+                        <div class="badge-featured">Mais Vendido</div>
+                        <div class="card-header">
+                            <h3>Eco Plus</h3>
+                            <p class="plan-description">Controle avançado para sua residência.</p>
+                            <div class="price">R$ 9,90<span>/mês</span></div>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="icon-check">✓</i> <strong>Aparelhos ilimitados</strong></li>
+                            <li><i class="icon-check">✓</i> Histórico completo e sem limites</li>
+                            <li><i class="icon-check">✓</i> Metas e Alertas inteligentes</li>
+                            <li><i class="icon-check">✓</i> Gráficos comparativos avançados</li>
+
+                            <li class="disabled"><i class="icon-close">✕</i> Relatórios profissionais em PDF</li>
+                            <li class="disabled"><i class="icon-close">✕</i> Insights com IA & Forecast</li>
+                            <li class="disabled"><i class="icon-close">✕</i> Gamificação & Eco Impacto</li>
+                        </ul>
+                        <button class="btn-plan btn-primary">Assinar Eco Plus</button>
+                    </div>
+                    <div class="pricing-card">
+                        <div class="card-header">
+                            <h3>Eco Premium</h3>
+                            <p class="plan-description">A experiência completa e inteligente.</p>
+                            <div class="price">R$ 24,90<span>/mês</span></div>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="icon-check">✓</i> Tudo do plano Eco Plus</li>
+                            <li><i class="icon-check">✓</i> <strong>Relatórios em PDF com gráficos SVG</strong></li>
+                            <li><i class="icon-check">✓</i> Insights Inteligentes & Sugestões</li>
+                            <li><i class="icon-check">✓</i> Previsão de consumo (Forecast)</li>
+                            <li><i class="icon-check">✓</i> Simulador de cenários hipotéticos</li>
+                            <li><i class="icon-check">✓</i> <strong>Eco Impacto (Gamificação & CO₂)</strong></li>
+
+                        </ul>
+                        <button class="btn-plan btn-primary">Seja Premium</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <section id="sobre" class="spa-section">
+        <div class="container">
+            <h2 class="section-title">Sobre o App</h2>
+            <p class="section-subtitle">Conectando engenharia moderna e sustentabilidade para empoderar o consumidor final.</p>
+            
+            <div class="about-split">
+                <div class="about-mockup-wrapper">
+                    <img src="assets/principal.png" alt="Interface EcoPower App" class="mockup-img">
+                    <span class="badge-tcc">TCC 2026</span>
+                </div>
+                <div class="about-text">
+                    <h3>Tecnologia Verde ao seu Alcance</h3>
+                    <p>O EcoPower nasceu como um projeto acadêmico de conclusão de curso (TCC), motivado pelo desafio de democratizar o acesso à eficiência energética.</p>
+                    <p>Ao unir o microcontrolador de baixo custo ESP32 a algoritmos inteligentes de telemetria, criamos uma plataforma de código aberto e hardware acessível que transforma a percepção de gastos elétricos invisíveis em dados práticos.</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number">+50</span>
+                            <span class="stat-label">Aparelhos Mapeados</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">97%</span>
+                            <span class="stat-label">Economia em Hardware</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">4.9</span>
+                            <span class="stat-label">Avaliação Estrelas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">Open</span>
+                            <span class="stat-label">Código Aberto</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+                <div class="card" style="padding: 35px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: var(--primary); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 16px;">O Problema</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 14px;">
+                        A conta de luz é uma das maiores despesas fixas do brasileiro, mas poucos sabem exatamente quanto cada aparelho consome individualmente. O medidor tradicional da concessionária mostra apenas o gasto agregado — sem detalhamento por equipamento, sem alertas, sem previsão.
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        Soluções comerciais existentes custam centenas de reais por tomada inteligente, tornando inviável mapear uma casa inteira. O EcoPower resolve isso com <strong style="color: var(--text-primary);">um único hardware portátil e de baixo custo</strong> que você move entre os aparelhos para auditar cada um individualmente.
+                    </p>
+                </div>
+                <div class="card" style="padding: 35px;">
+                    <i class="fa-solid fa-microchip" style="font-size: 2rem; color: var(--primary); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 16px;">A Arquitetura</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 14px;">
+                        <strong style="color: var(--text-primary);">Hardware:</strong> ESP32 + sensor de corrente não-invasivo (SCT-013). Mede tensão e corrente reais, calcula potência ativa, fator de potência e energia consumida (kWh). Tudo transmitido via Bluetooth Low Energy.
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 14px;">
+                        <strong style="color: var(--text-primary);">App:</strong> React Native + Firebase. Processamento local com cache inteligente — funciona offline. Dados sincronizados na nuvem via Firestore quando há conexão.
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        <strong style="color: var(--text-primary);">Algoritmos:</strong> Previsão por médias móveis, detecção de anomalias, recomendação de metas baseada em perfil de consumo e cálculo de impacto ambiental (CO₂ evitado).
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px;">
+                <div class="card" style="text-align: center; padding: 30px;">
+                    <i class="fa-solid fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Para Quem?</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Donos de casa que querem entender a própria conta de luz, estudantes de engenharia, entusiastas de IoT e qualquer pessoa interessada em reduzir o desperdício energético.
+                    </p>
+                </div>
+                <div class="card" style="text-align: center; padding: 30px;">
+                    <i class="fa-solid fa-road" style="font-size: 2rem; color: var(--secondary); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Futuro</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Integração com painéis solares, suporte iOS, multi-ESP32 simultâneo, dashboard web, inteligência artificial preditiva e comunidade de código aberto.
+                    </p>
+                </div>
+                <div class="card" style="text-align: center; padding: 30px;">
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 2rem; color: var(--secondary); margin-bottom: 15px;"></i>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Propósito</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Demonstrar que é possível construir soluções profissionais de eficiência energética com hardware acessível e software livre, formando engenheiros mais conscientes.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="funcionalidades" class="spa-section">
+        <div class="container">
+            <h2 class="section-title">Funcionalidades Extras</h2>
+            <p class="section-subtitle">Tudo o que você precisa para dominar e reduzir seus gastos com eletricidade de forma analítica.</p>
+            
+            <div class="func-grid">
+                <div class="card func-card">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h3>Dashboard ao Vivo</h3>
+                    <p>Acompanhe gráficos de potência ativa, variação de corrente elétrica e cálculo imediato de custo por hora de uso.</p>
+                </div>
+                <div class="card func-card">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <h3>Metas de Economia</h3>
+                    <p>Estipule um limite financeiro mensal e receba barras de progresso informando o quanto resta do seu orçamento.</p>
+                </div>
+                <div class="card func-card">
+                    <i class="fa-solid fa-bell"></i>
+                    <h3>Alertas Inteligentes</h3>
+                    <p>Seja notificado no celular se um eletrodoméstico esquecido ligado ultrapassar o tempo ou a potência habitual estimada.</p>
+                </div>
+                <div class="card func-card">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <h3>Relatórios PDF</h3>
+                    <p>Exporte fechamentos analíticos detalhados de consumo por aparelhos para comparar dados com sua distribuidora de energia.</p>
+                </div>
+                <div class="card func-card">
+                    <i class="fa-solid fa-calculator"></i>
+                    <h3>Previsão de Conta</h3>
+                    <p>Utilizando médias móveis, nosso motor matemático prevê o valor final da sua conta de luz com base no ritmo atual.</p>
+                </div>
+                <div class="card func-card">
+                    <i class="fa-solid fa-trophy"></i>
+                    <h3>Gamificação</h3>
+                    <p>Desbloqueie conquistas de eficiência ecológica, melhore seu Score Verde e compartilhe seus recordes de economia diária.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tecnologia" class="spa-section">
+        <div class="container">
+            <h2 class="section-title">Como Funciona</h2>
+            <p class="section-subtitle">Engenharia simplificada em 3 passos rápidos para iniciar o seu monitoramento.</p>
+            
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-icon-wrapper">
+                        <i class="fa-solid fa-plug"></i>
+                        <span class="step-num">01</span>
+                    </div>
+                    <h3>Conecte</h3>
+                    <p>O módulo compacto ESP32 monitora as medições do eletrodoméstico que deseja mapear no momento.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon-wrapper">
+                        <i class="fa-solid fa-tower-broadcast"></i>
+                        <span class="step-num">02</span>
+                    </div>
+                    <h3>Monitore</h3>
+                    <p>Dados técnicos precisos de corrente e tensão são gerados e transmitidos via Bluetooth LE para o smartphone.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon-wrapper">
+                        <i class="fa-solid fa-leaf"></i>
+                        <span class="step-num">03</span>
+                    </div>
+                    <h3>Economize</h3>
+                    <p>O app processa instantaneamente os cálculos de kWh e R$, exibindo insights valiosos para mitigação de desperdícios.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="font-size: 2rem; margin-top: 40px;">Dúvidas Frequentes</h2>
+            <div class="faq-wrapper">
+                <div class="faq-item">
+                    <button class="faq-trigger">Precisa de internet no local? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-content">
+                        <p>Não. O EcoPower funciona primariamente via Bluetooth Low Energy (BLE), permitindo monitoramento 100% local e offline.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-trigger">Quantos ESP32 eu preciso comprar? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-content">
+                        <p>Apenas um. O projeto foi arquitetado para ser portátil: você pode plugá-lo na geladeira por 2 dias para mapeá-la e depois movê-lo para o ar-condicionado.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-trigger">É difícil realizar a instalação física? <i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="faq-content">
+                        <p>Totalmente simples. O design de hardware utiliza sensores não-invasivos que se acoplam externamente aos cabos, sem necessidade de cortar fios.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qr-block">
+                <div class="qr-text">
+                    <h3>Instalação Imediata via QR Code</h3>
+                    <p>Aponte a câmera do seu celular Android para o lado e baixe o binário de testes homologado do EcoPower de forma ágil.</p>
+                </div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/mendesp7/EcoPower" alt="App QR Code" class="qr-code-img">
+            </div>
+        </div>
+    </section>
+
+    <section id="baixar" class="spa-section">
+        <div class="container">
+            <div class="download-wrapper" style="margin-top: 40px;">
+                <h2>Pronto para economizar?</h2>
+                <p>Baixe a versão nativa ou experimente nosso simulador interativo web agora mesmo de forma irrestrita.</p>
+                <div class="download-buttons">
+                    <button class="btn btn-primary btn-download"><i class="fa-brands fa-google-play"></i> Google Play App</button>
+                    <button class="btn btn-outline btn-demo"><i class="fa-solid fa-laptop-code"></i> Modo Demonstração</button>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-tertiary);">Disponível para sistemas Android. Arquitetura em camadas preparada para expansão futura iOS.</p>
+                <div class="badges-tech-container">
+                    <span class="tech-badge">OFFLINE FIRST</span>
+                    <span class="tech-badge">OPEN SOURCE</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contato" class="spa-section">
+        <div class="container">
+            <h2 class="section-title">Fale Conosco</h2>
+            <p class="section-subtitle">Dúvidas sobre o hardware ou sugestões para o ecossistema? Estamos prontos para atender.</p>
+            
+            <div class="contact-grid">
+                <div class="card contact-card" onclick="copyEmail(this)">
+                    <i class="fa-solid fa-envelope"></i>
+                    <h4>E-mail Oficial</h4>
+                    <p>ecopoweroficial2026@gmail.com</p>
+                    <span class="tooltip">E-mail copiado!</span>
+                </div>
+                <a href="https://github.com/mendesp7/EcoPower" target="_blank" class="card contact-card">
+                    <i class="fa-brands fa-github"></i>
+                    <h4>Repositório Git</h4>
+                    <p>github.com/mendesp7/EcoPower</p>
+                </a>
+                <a href="https://instagram.com" target="_blank" class="card contact-card">
+                    <i class="fa-brands fa-instagram"></i>
+                    <h4>Mídias Sociais</h4>
+                    <p>@ecopower.app</p>
+                </a>
+            </div>
+
+            <div class="map-mockup">
+                <i class="fa-solid fa-location-dot map-pin"></i>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <img src="assets/icon.png" alt="EcoPower" style="width: 28px; height: 28px; margin-right: 10px;"> EcoPower
+            </div>
+            <ul class="footer-links">
+                <li><a href="#home" onclick="navigateTo('home')">Home</a></li>
+                <li><a href="#sobre" onclick="navigateTo('sobre')">Sobre</a></li>
+                <li><a href="#funcionalidades" onclick="navigateTo('funcionalidades')">Funcionalidades</a></li>
+                <li><a href="#tecnologia" onclick="navigateTo('tecnologia')">Tecnologia</a></li>
+            </ul>
+            <div class="footer-socials">
+                <a href="https://github.com/mendesp7/EcoPower" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/5553991238008" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-credits">
+            <p>&copy; <span id="current-year"></span> EcoPower — Desenvolvido por João Mendes (Projeto Acadêmico TCC 2026). Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/5553991238008" target="_blank" class="whatsapp-float" aria-label="Contato via WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Modal Modo Demonstração -->
+    <div id="demo-modal" class="modal-overlay">
+        <div class="modal-box">
+            <i class="fa-solid fa-mobile-screen-button modal-icon"></i>
+            <h3>Modo Demonstração</h3>
+            <p>O EcoPower é um aplicativo mobile nativo.<br>Se você está no celular, instale o app e clique novamente para abrir o modo demonstração diretamente.</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/mendesp7/EcoPower" alt="QR Code" class="qr-code-img">
+            <p style="font-size:0.85rem;">Escaneie com seu celular para baixar o app.</p>
+            <button class="btn-close" onclick="closeDemoModal()">Entendi, fechar</button>
+        </div>
+    </div>
+
+    <script>
+        /* SPA ROUTER CONTROLLER */
+        function navigateTo(sectionId) {
+            // Ocultar todas as seções e remover animação ativa
+            const sections = document.querySelectorAll('.spa-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Ativar a seção clicada
+            const targetSection = document.getElementById(sectionId);
+            if(targetSection) {
+                targetSection.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Atualizar classes ativas dos menus de navegação
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active-link');
+                if(link.getAttribute('href') === `#${sectionId}`) {
+                    link.classList.add('active-link');
+                }
+            });
+
+            // Fecha o menu mobile caso esteja aberto
+            const navMenu = document.getElementById('nav-menu');
+            navMenu.classList.remove('mobile-open');
+        }
+
+        /* MOBILE MENU TOGGLE */
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('mobile-open');
+        });
+
+        /* HEADER OPACITY CONTROLLER ON SCROLL */
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        /* FAQ ACCORDION CONTROLLER */
+        const faqTriggers = document.querySelectorAll('.faq-trigger');
+        faqTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const parent = trigger.parentElement;
+                const content = trigger.nextElementSibling;
+                
+                if (parent.classList.contains('open')) {
+                    content.style.maxHeight = null;
+                    parent.classList.remove('open');
+                } else {
+                    // Fecha outros se abertos
+                    document.querySelectorAll('.faq-item').forEach(item => {
+                        item.classList.remove('open');
+                        item.querySelector('.faq-content').style.maxHeight = null;
+                    });
+                    
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    parent.classList.add('open');
+                }
+            });
+        });
+
+        /* CLIPBOARD COPY TOOLTIP HANDLER */
+        function copyEmail(cardElement) {
+            const emailText = cardElement.querySelector('p').innerText;
+            const tooltip = cardElement.querySelector('.tooltip');
+            
+            navigator.clipboard.writeText(emailText).then(() => {
+                tooltip.classList.add('show');
+                setTimeout(() => {
+                    tooltip.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Falha ao copiar texto: ', err);
+            });
+        }
+
+        /* MODO DEMONSTRAÇÃO MODAL */
+        function openDemoModal() {
+            document.getElementById('demo-modal').classList.add('open');
+        }
+
+        function closeDemoModal() {
+            document.getElementById('demo-modal').classList.remove('open');
+        }
+
+        /* INICIALIZAÇÃO DINÂMICA */
+        document.addEventListener("DOMContentLoaded", () => {
+            // Define o ano dinâmico no footer
+            document.getElementById('current-year').innerText = new Date().getFullYear();
+
+            // Trata hash inicial da URL se houver
+            const hash = window.location.hash.replace('#', '');
+            if(hash && document.getElementById(hash)) {
+                navigateTo(hash);
+            }
+
+            /* MODO DEMONSTRAÇÃO */
+            document.getElementById('demo-modal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closeDemoModal();
+            });
+
+            const demoBtn = document.querySelector('.btn-demo');
+            if (demoBtn) {
+                demoBtn.addEventListener('click', () => {
+                    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        // Tenta abrir o app via deep link; fallback pra download
+                        const appUrl = 'ecopower://demo';
+                        const storeUrl = 'https://github.com/mendesp7/EcoPower/releases';
+                        window.location.href = appUrl;
+                        setTimeout(() => { window.location.href = storeUrl; }, 800);
+                    } else {
+                        openDemoModal();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

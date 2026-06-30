@@ -19,4 +19,6 @@ export type RootStackParamList = {
   Comparison: undefined;
   Impact: undefined;
   About: undefined;
+  Support: undefined;
+  Plans: undefined;
 };

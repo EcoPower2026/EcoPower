@@ -27,7 +27,6 @@ type ComparisonTab = 'month' | 'week';
 export default function Comparison({ navigation }: ComparisonProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
-
   const [userId, setUserId] = useState<string | null>(null);
   const [comparisons, setComparisons] = useState<{ month: PeriodComparison; week: PeriodComparison } | null>(null);
   const [tarifa, setTarifa] = useState(0);
@@ -201,7 +200,7 @@ export default function Comparison({ navigation }: ComparisonProps) {
             letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: spacing.sm,
           }}>Economia</Text>
           <Text style={{ fontFamily: 'Poppins', fontSize: 28, fontWeight: '700', color: colors.green.primary, marginBottom: spacing.xs }}>
-            {active.variation.savingsAmount.toFixed(1)} kWh
+            R$ {(active.variation.savingsAmount * (tarifa || 0.95)).toFixed(2)}
           </Text>
           <Text style={{ fontFamily: 'Poppins', fontSize: 13, color: colors.text.darkSecondary, textAlign: 'center' }}>
             Você consumiu menos em relação ao período anterior.

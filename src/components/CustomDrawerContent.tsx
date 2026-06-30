@@ -44,6 +44,8 @@ const toolsItems: SectionItem[] = [
 
 const configItems: SectionItem[] = [
   { label: 'Configurações', screen: 'Settings', icon: 'cog-outline' },
+  { label: 'Suporte', screen: 'Support', icon: 'help-circle-outline' },
+  { label: 'Planos', screen: 'Plans', icon: 'crown-outline' },
   { label: 'Sobre', screen: 'About', icon: 'information-outline' },
 ];
 
@@ -88,6 +90,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
   const handleNavigate = (screen: string) => {
     setActiveRoute(screen);
     props.navigation.navigate(screen);
+    props.navigation.closeDrawer();
   };
 
   const handleSignOut = async () => {
@@ -96,7 +99,6 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
     } else {
       await signOut(auth);
     }
-    props.navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Cadastro' }] });
   };
 
   const renderItem = (item: SectionItem, badge?: number) => {

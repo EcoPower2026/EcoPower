@@ -181,40 +181,4 @@ export async function generateReport(
   };
 }
 
-export async function generateConsolidatedReport(
-  userId: string
-): Promise<Report[]> {
-  const types: ReportType[] = ['daily', 'weekly', 'monthly'];
-  const results = await Promise.all(
-    types.map(t => generateReport(userId, t))
-  );
-  return results;
-}
 
-export async function generateApplianceReport(
-  userId: string,
-  applianceId: string
-): Promise<Report> {
-  return generateReport(userId, 'monthly', applianceId);
-}
-
-export async function generateCompleteReport(
-  userId: string
-): Promise<Report> {
-  const monthly = await generateReport(userId, 'monthly');
-  const appliances = await getAppliances(userId);
-  const allStats: ApplianceStat[] = [];
-
-  for (const app of appliances) {
-    const appReport = await generateReport(userId, 'monthly', app.id);
-    if (appReport.totalConsumption > 0) {
-      allStats.push(...appReport.applianceStats);
-    }
-  }
-
-  if (allStats.length > 0) {
-    monthly.applianceStats = allStats;
-  }
-
-  return monthly;
-}

@@ -90,6 +90,14 @@ export default function Alerts({ navigation }: AlertsProps) {
     catch { RNAlert.alert('Erro', 'Não foi possível marcar como lido.'); }
   };
 
+  const handleMarkAllAsRead = async () => {
+    if (!userId) return;
+    try {
+      await dataProvider.markAllAlertsAsRead(userId, isDemoMode);
+      RNAlert.alert('Sucesso', 'Todos os alertas foram marcados como lidos.');
+    } catch { RNAlert.alert('Erro', 'Não foi possível marcar todos como lidos.'); }
+  };
+
   const handleDelete = async (alertId: string) => {
     if (!userId) return;
     try { await dataProvider.deleteAlert(userId, alertId, isDemoMode); }
@@ -183,6 +191,23 @@ export default function Alerts({ navigation }: AlertsProps) {
             </TouchableOpacity>
           ))}
         </View>
+      )}
+
+      {unreadCount > 0 && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={handleMarkAllAsRead}
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+            paddingVertical: spacing.sm, marginBottom: spacing.sm,
+          }}
+        >
+          <MaterialCommunityIcons name="check-all" size={18} color={colors.green.primary} style={{ marginRight: 6 }} />
+          <Text style={{
+            fontFamily: 'Poppins', fontSize: 13, fontWeight: '600',
+            color: colors.green.primary,
+          }}>Marcar tudo como lido</Text>
+        </TouchableOpacity>
       )}
 
       <Button title="Gerar Alertas Automáticos" onPress={handleGenerateAlerts} style={{ marginBottom: spacing.md }} />

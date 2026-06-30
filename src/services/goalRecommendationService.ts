@@ -91,7 +91,7 @@ export async function generateGoalRecommendation(params: {
 export function generateDemoGoalRecommendation(): GoalRecommendation {
   const readings = demoData.readings as unknown as EnergyReading[];
   const goals = demoData.goals;
-  const tariff = 0.95;
+  const tariff = demoData.user?.tarifaKwh ?? 0.95;
 
   const recentReadings = getLast3MonthsReadings(readings);
   const totalKwh = calculateAverageConsumption(recentReadings);

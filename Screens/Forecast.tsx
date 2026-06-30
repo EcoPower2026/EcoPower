@@ -24,7 +24,6 @@ type ForecastProps = {
 export default function Forecast({ navigation }: ForecastProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
-
   const [userId, setUserId] = useState<string | null>(null);
   const [forecast, setForecast] = useState<ForecastType | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);

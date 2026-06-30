@@ -76,7 +76,16 @@ export function checkAchievements(
       case 'mestre-economia':
         shouldUnlock = totalEconomia >= 100;
         break;
+      case 'economia-real':
+        shouldUnlock = totalEconomia >= 200;
+        break;
+      case 'super-economia':
+        shouldUnlock = totalEconomia >= 500;
+        break;
       case 'meta-conquistada':
+        shouldUnlock = firstGoalReached;
+        break;
+      case 'eco-iniciador':
         shouldUnlock = firstGoalReached;
         break;
       case 'persistente':
@@ -85,11 +94,17 @@ export function checkAchievements(
       case 'consumo-inteligente':
         shouldUnlock = daysWithoutCriticalAlerts >= 30;
         break;
+      case 'alerta-ativo':
+        shouldUnlock = daysActive >= 5;
+        break;
       case 'eco-hero':
         shouldUnlock = consumptionReductionPercent !== null && consumptionReductionPercent >= 10;
         break;
       case 'sustentavel':
         shouldUnlock = consumptionReductionPercent !== null && consumptionReductionPercent >= 20;
+        break;
+      case 'impacto-ambiental':
+        shouldUnlock = totalEconomia >= 50;
         break;
       case 'analista-energia':
         shouldUnlock = daysActive >= 10;

@@ -142,7 +142,8 @@ export async function generateRecommendations(
 
 export async function calculateEfficiencyScore(
   userId: string,
-  goals: Goal[]
+  goals: Goal[],
+  tariff: number = 0.95
 ): Promise<EfficiencyScore> {
   const topConsumers = await getTopConsumers(userId);
   const totalKwh = topConsumers.reduce((acc, c) => acc + c.consumption, 0);
@@ -195,19 +196,19 @@ export async function calculateEfficiencyScore(
   else if (score >= 50) classificacao = 'Regular';
   else classificacao = 'Crítico';
 
-  const economiaPotencial = totalKwh * 0.15 * 0.95; // 15% potential savings at avg tariff
+  const economiaPotencial = totalKwh * 0.15 * tariff;
 
   return { score, classificacao, economiaPotencial };
 }
 
-export async function generateInsights(userId: string, goals: Goal[]): Promise<{
+export async function generateInsights(userId: string, goals: Goal[], tariff: number = 0.95): Promise<{
   topConsumers: TopConsumer[];
   efficiencyScore: EfficiencyScore;
   recommendations: Insight[];
 }> {
   const [topConsumers, efficiencyScore, recommendations] = await Promise.all([
     getTopConsumers(userId),
-    calculateEfficiencyScore(userId, goals),
+    calculateEfficiencyScore(userId, goals, tariff),
     generateRecommendations(userId),
   ]);
 

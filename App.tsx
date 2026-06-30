@@ -36,6 +36,8 @@ import Forecast from './Screens/Forecast';
 import Comparison from './Screens/Comparison';
 import Impact from './Screens/ImpactScreen';
 import About from './Screens/About';
+import Support from './Screens/Support';
+import Plans from './Screens/Plans';
 import { auth } from './firebase';
 import Loading from './src/components/Loading';
 import CustomDrawerContent from './src/components/CustomDrawerContent';
@@ -43,6 +45,7 @@ import { RootStackParamList } from './src/types/navigation';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import { DemoProvider, useDemo } from './src/contexts/DemoContext';
 import { EcoImpactProvider } from './src/ecoImpact/EcoImpactContext';
+import { SubscriptionProvider } from './src/contexts/SubscriptionContext';
 import { useTheme } from './src/contexts/ThemeContext';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,7 +56,7 @@ function DrawerNavigator() {
 
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      drawerContent={CustomDrawerContent}
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.green.primary,
@@ -79,6 +82,8 @@ function DrawerNavigator() {
       <Drawer.Screen name="Comparison" component={Comparison} options={{ title: 'Comparativo' }} />
       <Drawer.Screen name="Impact" component={Impact} options={{ title: 'Eco Impacto' }} />
       <Drawer.Screen name="About" component={About} options={{ title: 'Sobre' }} />
+      <Drawer.Screen name="Support" component={Support} options={{ title: 'Suporte' }} />
+      <Drawer.Screen name="Plans" component={Plans} options={{ title: 'Planos' }} />
     </Drawer.Navigator>
   );
 }
@@ -182,11 +187,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <DemoProvider>
-          <EcoImpactProvider>
-            <AppNavigator />
-          </EcoImpactProvider>
-        </DemoProvider>
+        <SubscriptionProvider>
+          <DemoProvider>
+            <EcoImpactProvider>
+              <AppNavigator />
+            </EcoImpactProvider>
+          </DemoProvider>
+        </SubscriptionProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

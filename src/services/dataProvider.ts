@@ -99,9 +99,7 @@ function _getPeriodRange(type: ReportType): { start: string; end: string } {
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       break;
     case 'weekly':
-      const dayOfWeek = now.getDay();
-      const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-      start = new Date(now.getFullYear(), now.getMonth(), diff);
+      start = new Date(now.getTime() - 7 * 86400000);
       break;
     case 'monthly':
     case 'appliance':
@@ -450,6 +448,18 @@ export async function markAsRead(
   await alertService.markAsRead(userId, alertaId);
 }
 
+export async function markAllAlertsAsRead(
+  userId: string,
+  isDemo: boolean
+): Promise<void> {
+  if (isDemo) {
+    _demoAlerts = _demoAlerts.map(a => ({ ...a, lido: true }));
+    _notifyAlertCbs();
+    return;
+  }
+  await alertService.markAllAlertsAsRead(userId);
+}
+
 export async function deleteAlert(
   userId: string,
   alertaId: string,
@@ -689,25 +699,29 @@ export async function compareBoth(
 // Dashboard
 export async function getDashboardData(
   userId: string,
-  isDemo: boolean
+  isDemo: boolean,
+  readings?: EnergyReading[],
+  goals?: Goal[],
+  alerts?: Alert[],
 ): Promise<dashboardService.DashboardData> {
   if (isDemo) {
     return dashboardService.generateDemoDashboardData();
   }
 
   try {
+    const tariff = await getUserTariff(userId);
     const [insightsData, forecast, comparison] = await Promise.all([
-      insightService.generateInsights(userId, []),
-      forecastService.generateForecast(userId),
-      comparisonService.compareBoth(userId),
+      insightService.generateInsights(userId, goals || [], tariff),
+      forecastService.generateForecast(userId, tariff, goals),
+      comparisonService.compareBoth(userId, tariff),
     ]);
 
     const monthChange = comparison.month.variation.consumptionPercent;
 
     return dashboardService.generateDashboardData({
-      readings: [],
-      goals: [],
-      alerts: [],
+      readings: readings || [],
+      goals: goals || [],
+      alerts: alerts || [],
       efficiencyScore: insightsData.efficiencyScore,
       topConsumers: insightsData.topConsumers,
       forecast: {
@@ -715,18 +729,19 @@ export async function getDashboardData(
         projectedCost: forecast.projectedCost,
       },
       comparison: { monthConsumptionChange: monthChange },
-      tariff: 0.95,
+      tariff,
     });
   } catch {
+    const tariff = await getUserTariff(userId).catch(() => 0.95);
     return dashboardService.generateDashboardData({
-      readings: [],
-      goals: [],
-      alerts: [],
+      readings: readings || [],
+      goals: goals || [],
+      alerts: alerts || [],
       efficiencyScore: null,
       topConsumers: [],
       forecast: null,
       comparison: null,
-      tariff: 0.95,
+      tariff,
     });
   }
 }

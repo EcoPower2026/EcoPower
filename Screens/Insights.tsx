@@ -26,7 +26,6 @@ type InsightsProps = {
 export default function Insights({ navigation }: InsightsProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
-
   const prioridadeConfig = {
     alta: { label: 'Alta', color: colors.alert.danger },
     media: { label: 'Média', color: colors.alert.warning },

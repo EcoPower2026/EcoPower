@@ -46,6 +46,13 @@ export async function markAsRead(
   await updateDoc(alertaRef(userId, alertaId), { lido: true });
 }
 
+export async function markAllAlertsAsRead(userId: string): Promise<void> {
+  const q = query(alertasRef(userId), where('lido', '==', false));
+  const snapshot = await getDocs(q);
+  const updates = snapshot.docs.map(d => updateDoc(d.ref, { lido: true }));
+  await Promise.all(updates);
+}
+
 export async function deleteAlert(
   userId: string,
   alertaId: string

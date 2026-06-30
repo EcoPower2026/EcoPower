@@ -52,7 +52,7 @@ export default function EfficiencyLevelCard({ currentLevel, currentPoints, getPr
       </View>
 
       <View style={styles.levelsPreview}>
-        {EFFICIENCY_LEVELS.slice(0, 6).map((lvl, idx) => (
+        {EFFICIENCY_LEVELS.slice(0, 10).map((lvl, idx) => (
           <React.Fragment key={lvl.level}>
             <View style={styles.levelDot}>
               <View style={[
@@ -66,7 +66,7 @@ export default function EfficiencyLevelCard({ currentLevel, currentPoints, getPr
                 {lvl.level}
               </Text>
             </View>
-            {idx < 5 && (
+            {idx < 9 && (
               <View style={[styles.dotLine, { backgroundColor: lvl.level < currentLevel ? colors.green.primary : colors.divider }]} />
             )}
           </React.Fragment>
@@ -141,19 +141,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginBottom: 2,
   },
   dotLabel: {
     fontFamily: 'Poppins',
-    fontSize: 10,
+    fontSize: 8,
   },
   dotLine: {
     flex: 1,
     height: 2,
-    marginHorizontal: 4,
-    marginBottom: 12,
+    marginHorizontal: 2,
+    marginBottom: 10,
   },
 });

@@ -38,6 +38,7 @@ export default function History({ navigation }: HistoryProps) {
   const { colors, themeName } = useTheme();
   const { isDemoMode } = useDemo();
 
+
   const [readings, setReadings] = useState<EnergyReading[]>([]);
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [loading, setLoading] = useState(true);

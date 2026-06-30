@@ -36,6 +36,7 @@ export default function Reports({ navigation }: ReportsProps) {
   const { colors } = useTheme();
   const { isDemoMode } = useDemo();
 
+
   const [report, setReport] = useState<Report | null>(null);
   const [consolidatedReports, setConsolidatedReports] = useState<Report[]>([]);
   const [selectedType, setSelectedType] = useState<ReportType>('monthly');

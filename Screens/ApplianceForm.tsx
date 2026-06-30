@@ -37,24 +37,26 @@ export default function ApplianceForm({ navigation, route }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, user => {
       const uid = isDemoMode ? 'demo-user' : (user?.uid || '');
       setUserId(uid);
       if (user || isDemoMode) {
-        if (isEditing) {
-          const unsubAppliances = dataProvider.subscribeAppliances(uid, list => {
+        const unsubApps = dataProvider.subscribeAppliances(uid, list => {
+          if (isEditing) {
             const found = list.find(a => a.id === applianceId);
             if (found) {
               setNome(found.nome);
               setDescricao(found.descricao);
             }
             setLoading(false);
-            unsubAppliances();
-          }, isDemoMode);
-        } else {
-          setLoading(false);
-        }
+            unsubApps();
+          } else {
+            setLoading(false);
+            unsubApps();
+          }
+        }, isDemoMode);
       } else {
         setLoading(false);
       }

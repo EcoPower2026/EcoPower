@@ -40,23 +40,27 @@ export default function DemoMode({ navigation }: DemoModeProps) {
           <Text style={styles.cardTitle}>Sobre o Sistema</Text>
           <Text style={styles.cardText}>
             O EcoPower é um sistema inteligente de monitoramento de consumo de energia elétrica.
-            Através de sensores de corrente, o sistema coleta dados em tempo real do
-            consumo dos seus aparelhos e fornece análises detalhadas, relatórios e recomendações
-            para economia de energia.
+            Através de dados de consumo informados pelo usuário, o sistema calcula o gasto
+            energético dos seus aparelhos e fornece análises detalhadas, relatórios, metas
+            personalizadas e recomendações para economia de energia.
           </Text>
         </View>
 
         <View style={[styles.card, shadows.card]}>
           <Text style={styles.cardTitle}>Funcionalidades Disponíveis</Text>
           {[
-            'Dashboard com indicadores em tempo real',
-            'Gerenciamento de aparelhos e metas',
-            'Alertas inteligentes de consumo',
-            'Relatórios avançados com exportação',
-            'Gráficos e análises de consumo',
+            'Dashboard com indicadores de consumo em tempo real',
+            'Gerenciamento de aparelhos e metas de economia',
+            'Alertas inteligentes de consumo excessivo',
+            'Relatórios avançados com exportação em PDF',
+            'Gráficos e análises de consumo energético',
             'Simulador de consumo e economia',
-            'Recomendações inteligentes',
-            'Score de eficiência energética',
+            'Score de eficiência energética (Eco Impacto)',
+            'Previsão mensal e comparativo entre períodos',
+            'Insights personalizados de economia',
+            'Recomendações inteligentes de metas',
+            'Sistema de gamificação com níveis e conquistas',
+            'Tema escuro e tema Eco Nature',
           ].map((item, i) => (
             <View key={i} style={styles.featureRow}>
               <Text style={styles.featureBullet}>✓</Text>

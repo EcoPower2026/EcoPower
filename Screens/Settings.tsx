@@ -27,6 +27,7 @@ export default function Settings({ navigation }: SettingsProps) {
   const { colors, themeName, setTheme } = useTheme();
   const { isDemoMode, disableDemoMode } = useDemo();
 
+
   const [userId, setUserId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [energyRate, setEnergyRate] = useState('');

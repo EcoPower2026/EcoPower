@@ -20,9 +20,9 @@ const DEMO_APPLIANCES: (Appliance & { potencia: number; horasPorDia: number; ati
   { id: 'demo-app-1', nome: 'Geladeira', descricao: 'Geladeira Frost Free 340L', dataCadastro: '2024-01-15T10:00:00Z', potencia: 150, horasPorDia: 24, ativo: true },
   { id: 'demo-app-2', nome: 'TV Smart', descricao: 'TV LED 55" 4K', dataCadastro: '2024-02-10T14:00:00Z', potencia: 120, horasPorDia: 6, ativo: true },
   { id: 'demo-app-3', nome: 'Ar Condicionado', descricao: 'Ar Condicionado Split 12000 BTUs', dataCadastro: '2024-03-05T09:00:00Z', potencia: 1500, horasPorDia: 6, ativo: true },
-  { id: 'demo-app-4', nome: 'Microondas', descricao: 'Microondas 30L', dataCadastro: '2024-01-20T11:00:00Z', potencia: 1200, horasPorDia: 0.5, ativo: false },
+  { id: 'demo-app-4', nome: 'Microondas', descricao: 'Microondas 30L', dataCadastro: '2024-01-20T11:00:00Z', potencia: 1200, horasPorDia: 0.5, ativo: true },
   { id: 'demo-app-5', nome: 'Chuveiro Elétrico', descricao: 'Chuveiro Elétrico 5500W', dataCadastro: '2024-04-12T16:00:00Z', potencia: 5500, horasPorDia: 1, ativo: true },
-  { id: 'demo-app-6', nome: 'Computador Gamer', descricao: 'PC Gamer RTX 4070', dataCadastro: '2024-05-01T18:00:00Z', potencia: 500, horasPorDia: 6, ativo: false },
+  { id: 'demo-app-6', nome: 'Computador Gamer', descricao: 'PC Gamer RTX 4070', dataCadastro: '2024-05-01T18:00:00Z', potencia: 500, horasPorDia: 6, ativo: true },
   { id: 'demo-app-7', nome: 'Máquina de Lavar', descricao: 'Lava e Seca 12kg', dataCadastro: '2024-02-25T08:00:00Z', potencia: 1000, horasPorDia: 1, ativo: true },
 ];
 

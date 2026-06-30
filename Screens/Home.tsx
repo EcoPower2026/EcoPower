@@ -140,7 +140,7 @@ export default function Home({ navigation }: HomeProps) {
 
   useEffect(() => {
     if (userId) {
-      dataProvider.getDashboardData(userId, isDemoMode).then(setDashboard).catch(() => {});
+      dataProvider.getDashboardData(userId, isDemoMode, readings, goals, alerts).then(setDashboard).catch(() => {});
     }
   }, [userId, isDemoMode, readings, goals, alerts]);
 
@@ -399,11 +399,21 @@ export default function Home({ navigation }: HomeProps) {
                   datasets: [{ data: dashboard.chartData.values }],
                 }}
                 width={screenWidth - spacing.md * 2}
-                height={140}
-                chartConfig={chartConfigLocal}
+                height={220}
+                chartConfig={{
+                  ...chartConfigLocal,
+                  propsForLabels: {
+                    ...chartConfigLocal.propsForLabels,
+                    fontSize: 10,
+                  },
+                }}
                 fromZero
                 bezier
-                style={{ borderRadius: borderRadius.md, marginLeft: -spacing.xs }}
+                style={{
+                  borderRadius: borderRadius.md,
+                  marginLeft: -spacing.xs,
+                  paddingBottom: spacing.sm,
+                }}
               />
             </WhiteCard>
           )}

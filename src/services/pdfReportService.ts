@@ -1245,6 +1245,13 @@ function buildHTML(data: PDFReportData, coverImage?: string): string {
     <div style="font-size:9px;color:#22C55E;font-weight:600;margin-top:6px;">ecopower2026.netlify.app</div>
   </div>
 
+  <div style="text-align:center;padding:12px 16px;background:#FFFFFF;border-radius:16px;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,0.04);margin-bottom:12px;">
+    <div style="font-size:8px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Precisa de suporte?</div>
+    <div style="font-size:9px;color:#475569;line-height:1.6;margin-bottom:4px;">Entre em contato pelo e-mail</div>
+    <div style="font-size:11px;color:#22C55E;font-weight:700;">ecopoweroficial2026@gmail.com</div>
+    <div style="font-size:8px;color:#94A3B8;margin-top:4px;">Acesse ecopower2026.netlify.app para mais informações</div>
+  </div>
+
   ${pageFooter(7)}
 </div>
 
