@@ -4,7 +4,6 @@ import { getFirestore } from "firebase/firestore";
 // React Native do Firebase Auth, resolvido corretamente pelo Metro bundler
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import firebaseConfig from "./firebase.credentials";
 
 const app = initializeApp(firebaseConfig);
