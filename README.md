@@ -53,7 +53,13 @@ npm install
 
 1. Crie um projeto no [Firebase Console](https://console.firebase.google.com)
 2. Ative **Authentication** (método: email/senha) e **Firestore Database**
-3. No arquivo `firebase.ts`, substitua os placeholders pelas credenciais do seu projeto:
+3. Copie o arquivo de exemplo de credenciais:
+
+```bash
+cp firebase.credentials.example.ts firebase.credentials.ts
+```
+
+4. No arquivo `firebase.credentials.ts`, substitua os placeholders pelas credenciais do seu projeto:
 
 ```ts
 const firebaseConfig = {
@@ -65,6 +71,8 @@ const firebaseConfig = {
   appId: "1:SEU_APP_ID"
 };
 ```
+
+> ⚠️ `firebase.credentials.ts` está no `.gitignore` e **não é versionado**. Cada desenvolvedor precisa criar o seu com as credenciais do próprio projeto Firebase. O arquivo `firebase.ts` importa as configurações de lá.
 
 > ⚠️ **Firebase Security Rules**: após configurar, vá no Firebase Console > Firestore > Regras e defina regras de segurança. Durante o desenvolvimento use o modo de teste, mas em produção restrinja o acesso baseado em autenticação para proteger seus dados.
 
