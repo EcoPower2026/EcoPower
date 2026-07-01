@@ -60,7 +60,7 @@ export default function DemoMode({ navigation }: DemoModeProps) {
             'Insights personalizados de economia',
             'Recomendações inteligentes de metas',
             'Sistema de gamificação com níveis e conquistas',
-            'Tema escuro e tema Eco Nature',
+            '4 temas: EcoPower Dark, EcoPower Light, Eco Nature e Eco Nature Premium',
           ].map((item, i) => (
             <View key={i} style={styles.featureRow}>
               <Text style={styles.featureBullet}>✓</Text>

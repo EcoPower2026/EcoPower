@@ -1,21 +1,27 @@
-MIT License
+Custom License — EcoPower
 
-Copyright (c) 2026 EcoPower
+Copyright (c) 2026 EcoPower — Desenvolvido por João Mendes
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
+deste software e dos arquivos de documentação associados (o "Software"), para
+usar, copiar, modificar, fundir, publicar, distribuir, sublicenciar e/ou
+disponibilizar cópias do Software, sujeito às seguintes condições:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. USO NÃO COMERCIAL
+   O Software não pode ser vendido, comercializado, ou utilizado como produto
+   pago, no todo ou em parte, sob nenhuma forma ou meio. É permitido o uso
+   em projetos acadêmicos, pessoais, open-source, ou corporativos desde que
+   não haja cobrança direta pelo Software em si.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. ATRIBUIÇÃO
+   Toda cópia ou distribuição substancial do Software, modificada ou não,
+   deve manter o aviso de copyright acima e esta licença.
+
+3. ISENÇÃO DE GARANTIA
+   O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO,
+   EXPRESSA OU IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO A, GARANTIAS DE
+   COMERCIALIZAÇÃO, ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO E NÃO VIOLAÇÃO.
+   EM NENHUM CASO OS AUTORES OU TITULARES DOS DIREITOS AUTORAIS SERÃO
+   RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO, DANOS OU OUTRA RESPONSABILIDADE,
+   SEJA EM AÇÃO DE CONTRATO, ATO ILÍCITO OU DE OUTRA FORMA, DECORRENTE DE,
+   OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO SOFTWARE.
