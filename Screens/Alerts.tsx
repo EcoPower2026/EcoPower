@@ -8,7 +8,7 @@ import {
 import { Swipeable, ScrollView } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../src/firebase';
 import { useDemo } from '../src/contexts/DemoContext';
 import * as dataProvider from '../src/services/dataProvider';
 import { Alert, Goal, Appliance } from '../src/types';

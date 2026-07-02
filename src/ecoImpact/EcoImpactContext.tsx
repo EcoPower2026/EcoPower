@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { auth } from '../firebase';
 import { useDemo } from '../contexts/DemoContext';
 import * as dataProvider from '../services/dataProvider';
 import { getUserProfile } from '../services/userService';

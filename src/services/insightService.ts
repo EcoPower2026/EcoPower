@@ -6,7 +6,7 @@ import {
   orderBy,
   getDocs,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { EnergyReading, Goal, EfficiencyScore, Insight } from '../types';
 
 export type TopConsumer = {

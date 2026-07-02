@@ -56,10 +56,10 @@ npm install
 3. Copie o arquivo de exemplo de credenciais:
 
 ```bash
-cp firebase.credentials.example.ts firebase.credentials.ts
+cp src/firebase/credentials.example.ts src/firebase/credentials.ts
 ```
 
-4. No arquivo `firebase.credentials.ts`, substitua os placeholders pelas credenciais do seu projeto:
+4. No arquivo `src/firebase/credentials.ts`, substitua os placeholders pelas credenciais do seu projeto:
 
 ```ts
 const firebaseConfig = {
@@ -72,7 +72,7 @@ const firebaseConfig = {
 };
 ```
 
-> ⚠️ `firebase.credentials.ts` está no `.gitignore` e **não é versionado**. Cada desenvolvedor precisa criar o seu com as credenciais do próprio projeto Firebase. O arquivo `firebase.ts` importa as configurações de lá.
+> ⚠️ `src/firebase/credentials.ts` está no `.gitignore` e **não é versionado**. Cada desenvolvedor precisa criar o seu com as credenciais do próprio projeto Firebase. O arquivo `src/firebase/client.ts` importa as configurações de lá.
 
 > ⚠️ **Firebase Security Rules**: após configurar, vá no Firebase Console > Firestore > Regras e defina regras de segurança. Durante o desenvolvimento use o modo de teste, mas em produção restrinja o acesso baseado em autenticação para proteger seus dados.
 
@@ -118,8 +118,10 @@ EcoPower/
 │   ├── services/     # Serviços (dataProvider, pdfReportService, etc.)
 │   ├── theme/        # Sistema de temas e design system
 │   └── types/        # Tipos TypeScript
-├── firebase.ts       # Configuração do Firebase
-└── App.tsx           # Entry point e navegação
+├── src/App.tsx           # Entry point e navegação
+├── src/firebase/         # Configuração do Firebase
+├── web/                  # Site institucional
+└── docs/                 # Documentação e licença
 ```
 
 ## Temas

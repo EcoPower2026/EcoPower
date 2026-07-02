@@ -6,7 +6,7 @@ import {
   Unsubscribe,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { MonitoringState } from '../types';
 
 function estadoRef(userId: string) {

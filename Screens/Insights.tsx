@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../src/firebase';
 import { useDemo } from '../src/contexts/DemoContext';
 import * as dataProvider from '../src/services/dataProvider';
 import { EfficiencyScore, Insight, Goal } from '../src/types';

@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDemo } from '../contexts/DemoContext';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { auth } from '../firebase';
 import * as dataProvider from '../services/dataProvider';
 import EcoPowerLogo from './EcoPowerLogo';
 import { useTheme } from '../contexts/ThemeContext';

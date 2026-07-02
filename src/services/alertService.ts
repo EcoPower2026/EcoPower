@@ -12,7 +12,7 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { Alert, Goal, EnergyReading, Appliance } from '../types';
 function alertasRef(userId: string) {
   return collection(db, 'usuarios', userId, 'alertas');

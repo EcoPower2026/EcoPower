@@ -7,7 +7,7 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { ApplianceStat, Report, ReportType } from '../types';
 
 function getPeriodRange(type: ReportType): { start: string; end: string } {

@@ -10,7 +10,7 @@ import {
   Unsubscribe,
   getDocs,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { EnergyReading } from '../types';
 
 function leiturasRef(userId: string) {

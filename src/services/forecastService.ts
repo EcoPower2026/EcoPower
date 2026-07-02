@@ -5,7 +5,7 @@ import {
   orderBy,
   getDocs,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { EnergyReading, Goal, Forecast, GoalComparison, DemoReading } from '../types';
 import { demoData } from '../data/demoData';
 

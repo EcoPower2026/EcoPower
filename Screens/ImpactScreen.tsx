@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { ScrollView, View, Text, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { ScrollView, View, Text, StyleSheet, RefreshControl, TouchableOpacity, Alert as RNAlert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { spacing, borderRadius, shadows, typography } from '../src/theme/designSystem';
@@ -9,7 +9,10 @@ import EfficiencyLevelCard from '../src/ecoImpact/components/EfficiencyLevelCard
 import StreakCard from '../src/ecoImpact/components/StreakCard';
 import ImpactCard from '../src/ecoImpact/components/ImpactCard';
 import AchievementCard from '../src/ecoImpact/components/AchievementCard';
+import ShareCard from '../src/ecoImpact/components/ShareCard';
 import Loading from '../src/components/Loading';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 
 const IMPACT_ICONS: Record<string, { icon: string; bg: string }> = {
   'CO₂ Evitado': { icon: 'leaf-outline', bg: '#2B6777' },
@@ -21,6 +24,8 @@ const IMPACT_ICONS: Record<string, { icon: string; bg: string }> = {
 export default function ImpactScreen() {
   const { colors, themeName } = useTheme();
   const isPremium = themeName === 'ecoNaturePremium';
+
+  const shareCardRef = useRef<any>(null);
 
   const {
     achievements,
@@ -34,6 +39,25 @@ export default function ImpactScreen() {
   } = useEcoImpact();
 
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleShare = useCallback(async () => {
+    try {
+      const uri = await captureRef(shareCardRef, {
+        format: 'png',
+        quality: 1,
+      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/png',
+          dialogTitle: 'Compartilhar Impacto Ambiental',
+        });
+      } else {
+        RNAlert.alert('Erro', 'Compartilhamento não disponível neste dispositivo.');
+      }
+    } catch {
+      RNAlert.alert('Erro', 'Não foi possível compartilhar o card.');
+    }
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -49,7 +73,16 @@ export default function ImpactScreen() {
   }
 
   return (
-    <ScrollView
+    <>
+      <View ref={shareCardRef} collapsable={false} style={{ position: 'absolute', top: -9999, width: 320, height: 360, opacity: 0 }} pointerEvents="none">
+        <ShareCard
+          impact={impact}
+          efficiency={efficiency}
+          streak={streak}
+          totalEconomia={totalEconomia}
+        />
+      </View>
+      <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
@@ -157,7 +190,17 @@ export default function ImpactScreen() {
           <StatItem label="Pontuação" value={`${efficiency.currentPoints} pts`} color={colors.green.light} colors={colors} />
         </View>
       </View>
+
+      <TouchableOpacity
+        onPress={handleShare}
+        style={[styles.shareButton, { backgroundColor: colors.green.primary }]}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+        <Text style={styles.shareButtonText}>Compartilhar Impacto</Text>
+      </TouchableOpacity>
     </ScrollView>
+    </>
   );
 }
 
@@ -255,5 +298,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: spacing.lg,
+  },
+  shareButtonText: {
+    fontFamily: 'Poppins',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

@@ -10,7 +10,7 @@ import {
   Unsubscribe,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { Appliance } from '../types';
 
 function aparelhosRef(userId: string) {

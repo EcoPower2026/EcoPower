@@ -7,7 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../src/firebase';
 import { useDemo } from '../src/contexts/DemoContext';
 import * as dataProvider from '../src/services/dataProvider';
 import Button from '../src/components/Button';

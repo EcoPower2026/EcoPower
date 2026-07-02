@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ImageBackground } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../src/firebase';
 import Button from '../src/components/Button';
 import Input from '../src/components/Input';
 import Loading from '../src/components/Loading';

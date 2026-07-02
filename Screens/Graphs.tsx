@@ -9,7 +9,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../src/firebase';
 import { useDemo } from '../src/contexts/DemoContext';
 import * as dataProvider from '../src/services/dataProvider';
 import { Appliance, MonitoringState, EnergyReading } from '../src/types';
