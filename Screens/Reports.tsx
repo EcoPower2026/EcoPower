@@ -278,7 +278,7 @@ export default function Reports({ navigation }: ReportsProps) {
             </View>
           )}
 
-          <View style={{
+            <View style={{
             backgroundColor: colors.card, borderRadius: borderRadius.card,
             padding: spacing.md, marginBottom: spacing.md, ...shadows.card,
           }}>
@@ -286,6 +286,15 @@ export default function Reports({ navigation }: ReportsProps) {
               fontFamily: 'Poppins', fontSize: 13, fontWeight: '600', color: colors.text.darkMuted,
               marginBottom: spacing.md, letterSpacing: 0.5, textTransform: 'uppercase',
             }}>Exportar</Text>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+              <MaterialCommunityIcons name="file-delimited" size={20} color={colors.green.primary} style={{ marginRight: spacing.sm }} />
+              <Text style={{ fontFamily: 'Poppins', fontSize: 13, color: colors.text.darkMuted, flex: 1 }}>
+                Exporte os dados em CSV para abrir no Excel ou Google Sheets.
+              </Text>
+            </View>
+            <Button title="Exportar CSV" onPress={handleExportCSV} variant="outline" style={{ marginBottom: spacing.md }} />
+
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
               <MaterialCommunityIcons name="file-pdf-box" size={20} color={colors.green.primary} style={{ marginRight: spacing.sm }} />
               <Text style={{ fontFamily: 'Poppins', fontSize: 13, color: colors.text.darkMuted, flex: 1 }}>
